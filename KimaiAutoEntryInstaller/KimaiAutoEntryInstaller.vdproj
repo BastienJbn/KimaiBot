@@ -15,7 +15,7 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_8468E5C2EC5948169D0334D35E8A04E9"
+        "MsmKey" = "8:_6F148B84B1D24EB5822C8D9222BCBF68"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -37,6 +37,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -53,41 +61,55 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
     }
     "Deployable"
     {
         "CustomAction"
         {
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_0119BA0B1EFE477A9A0EF445A813DFA6"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_0D588C54E962418E97EA6AD6B26E48CF"
             {
             "Name" = "8:Éléments de publication from KimaiAutoEntry (Active)"
             "Condition" = "8:"
-            "Object" = "8:_8468E5C2EC5948169D0334D35E8A04E9"
+            "Object" = "8:_6F148B84B1D24EB5822C8D9222BCBF68"
             "FileType" = "3:2"
             "InstallAction" = "3:1"
             "Arguments" = "8:/Install"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_D1C4440D_4F04_41B2_8E81_050A11902A0D"
+            "Identifier" = "8:_E0B2947A_2D46_4013_B152_05CC289292FF"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
-            "Run64Bit" = "11:TRUE"
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_409F6512D8874A6BA8F7DF5D8820B1FC"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_B29DE387C0524982AE16D304D5E278D4"
             {
             "Name" = "8:Éléments de publication from KimaiAutoEntry (Active)"
             "Condition" = "8:"
-            "Object" = "8:_8468E5C2EC5948169D0334D35E8A04E9"
+            "Object" = "8:_6F148B84B1D24EB5822C8D9222BCBF68"
             "FileType" = "3:2"
             "InstallAction" = "3:4"
             "Arguments" = "8:/Uninstall"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_602DD784_9360_462C_9B20_29F1CF243DA6"
+            "Identifier" = "8:_9757BE42_59F4_463E_A362_52682BFDA939"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
-            "Run64Bit" = "11:TRUE"
             }
         }
         "DefaultFeature"
@@ -171,7 +193,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:KimaiAutoEntryInstaller"
         "ProductCode" = "8:{9EDFD1A4-5866-4DF5-8893-2B39B193796C}"
-        "PackageCode" = "8:{12EB3676-D4AE-4354-9B4F-12ACE05B21F9}"
+        "PackageCode" = "8:{CC027D1C-1AE4-4809-A756-7A462E813C51}"
         "UpgradeCode" = "8:{7D47E919-5ADF-4458-9AA5-A56FD2560F4B}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -690,9 +712,9 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_8468E5C2EC5948169D0334D35E8A04E9"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_6F148B84B1D24EB5822C8D9222BCBF68"
             {
-            "SourcePath" = "8:..\\KimaiAutoEntry\\KimaiAutoEntryApp\\bin\\Release\\net8.0\\win-x64\\publish\\KimaiAutoEntry.exe"
+            "SourcePath" = "8:..\\KimaiAutoEntryApp\\bin\\Release\\net8.0\\win-x64\\publish\\KimaiAutoEntry.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_A58F735B09DB42D49002822257EEE665"
