@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35103.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KimaiAutoEntry", "KimaiAutoEntryApp\KimaiAutoEntry.csproj", "{6CCF2CB6-F5AE-477F-9B09-D9FD2C7E09FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KimaiAutoEntryService", "KimaiAutoEntryApp\KimaiAutoEntryService.csproj", "{6CCF2CB6-F5AE-477F-9B09-D9FD2C7E09FD}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "KimaiAutoEntryInstaller", "KimaiAutoEntryInstaller\KimaiAutoEntryInstaller.vdproj", "{22EC9D62-BF6A-4112-A2E5-1E0C827EB830}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KimaiAutoEntryCmdClient", "KimaiAutoEntryCmdClient\KimaiAutoEntryCmdClient.csproj", "{E4B8C0D6-9967-4AF6-8903-3ABCC7588D85}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,6 +21,10 @@ Global
 		{6CCF2CB6-F5AE-477F-9B09-D9FD2C7E09FD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{22EC9D62-BF6A-4112-A2E5-1E0C827EB830}.Debug|Any CPU.ActiveCfg = Release
 		{22EC9D62-BF6A-4112-A2E5-1E0C827EB830}.Release|Any CPU.ActiveCfg = Release
+		{E4B8C0D6-9967-4AF6-8903-3ABCC7588D85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4B8C0D6-9967-4AF6-8903-3ABCC7588D85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4B8C0D6-9967-4AF6-8903-3ABCC7588D85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4B8C0D6-9967-4AF6-8903-3ABCC7588D85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
