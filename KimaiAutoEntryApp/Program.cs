@@ -18,7 +18,7 @@ if (OperatingSystem.IsWindows())
         EventLogSettings, EventLogLoggerProvider>(builder.Services);
 }
 
-builder.Services.AddSingleton<KimaiService>();
+builder.Services.AddSingleton<KimaiServer>();
 builder.Services.AddHostedService<WindowsBackgroundService>();
 
 if (args is { Length: 1 })
@@ -31,17 +31,18 @@ if (args is { Length: 1 })
         if (args[0] is "/Install")
         {
             await Cli.Wrap("sc.exe")
-                .WithArguments(new[] { "create", ServiceName, $"binPath={executablePath}", "start=auto" })
+                .WithArguments(["create", ServiceName, $"binPath={executablePath}", "start=auto"])
+                .WithArguments(["start", ServiceName])
                 .ExecuteAsync();
         }
         else if (args[0] is "/Uninstall")
         {
             await Cli.Wrap("sc.exe")
-                .WithArguments(new[] { "stop", ServiceName })
+                .WithArguments(["stop", ServiceName])
                 .ExecuteAsync();
 
             await Cli.Wrap("sc.exe")
-                .WithArguments(new[] { "delete", ServiceName })
+                .WithArguments(["delete", ServiceName])
                 .ExecuteAsync();
         }
     }
