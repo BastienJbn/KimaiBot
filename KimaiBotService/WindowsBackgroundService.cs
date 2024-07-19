@@ -1,9 +1,9 @@
 using System.IO.Pipes;
 
-namespace KimaiAutoEntry;
+namespace KimaiBotService;
 
 public sealed class WindowsBackgroundService(
-    KimaiServer server) : BackgroundService
+    KimaiBot server) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

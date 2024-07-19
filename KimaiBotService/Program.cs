@@ -1,4 +1,4 @@
-using KimaiAutoEntry;
+using KimaiBotService;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;
 
@@ -18,7 +18,7 @@ if (OperatingSystem.IsWindows())
         EventLogSettings, EventLogLoggerProvider>(builder.Services);
 }
 
-builder.Services.AddSingleton<KimaiServer>();
+builder.Services.AddSingleton<KimaiBot>();
 builder.Services.AddHostedService<WindowsBackgroundService>();
 
 if (args is { Length: 1 })
