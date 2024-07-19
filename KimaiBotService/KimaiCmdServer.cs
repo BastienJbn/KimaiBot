@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace KimaiBotService
 {
-    class KimaiServer
+    class KimaiCmdServer
     {
         private readonly NamedPipeServerStream pipeServer =
             new("KimaiAutoEntryPipe", PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
 
-        KimaiServer()
+        KimaiCmdServer()
         {
             pipeServer.BeginWaitForConnection(WaitForConnectionCallback, null);
         }

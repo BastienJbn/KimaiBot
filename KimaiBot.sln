@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35103.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KimaiBotConsoleClient", "KimaiBotConsoleClient\KimaiBotConsoleClient.csproj", "{2B1BEE3E-1B8D-4DFD-8D58-448E7BF13BC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KimaiBotCmdClient", "KimaiBotConsoleClient\KimaiBotCmdClient.csproj", "{2B1BEE3E-1B8D-4DFD-8D58-448E7BF13BC8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KimaiBotService", "KimaiBotService\KimaiBotService.csproj", "{DF564013-2D1A-452A-8B10-04F17FDAB5BA}"
 EndProject
