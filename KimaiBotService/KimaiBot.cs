@@ -9,12 +9,24 @@ public sealed class KimaiBot
 
     private readonly KimaiHttpClient httpClient = new();
 
-    public KimaiBot()
+    private readonly PipeServer server = new();
+
+    public void Loop()
     {
-        
+        server.StartServer();
+
+        while (true)
+        {
+            string? request = server.popCommand();
+            if (request != null)
+            {
+                string response = HandleCommand(request);
+                server.SendResponse(response);
+            }
+        }
     }
 
-    public string HandleCommand(string request)
+    private string HandleCommand(string request)
     {
         string[] args = request.Split(' ');
 

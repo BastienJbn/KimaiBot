@@ -1,35 +1,11 @@
 ﻿namespace KimaiAutoEntryCmdClient;
 
 using CommandLine;
-using System.IO.Pipes;
-using System.Text;
+using KimaiBotService;
 
-public class Client
+class Parser(PipeClient pipeClient)
 {
-    private readonly NamedPipeClientStream pipeClient = new(".", "KimaiAutoEntryPipe", PipeDirection.InOut);
-
-    public Client()
-    {
-    }
-
-    public bool Connect()
-    {
-        try
-        {
-            pipeClient.ConnectAsync(2000).Wait();
-        }
-        catch
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    public void Disconnect()
-    {
-        pipeClient.Close();
-    }
+    private PipeClient pipeClient = pipeClient;
 
     public int HandleCommand(string? command)
     {
@@ -38,7 +14,7 @@ public class Client
 
         var args = command.Split();
 
-        var result = Parser.Default.ParseArguments<LoginOptions, LogoutOptions, AddEntryOptions>(args)
+        var result = CommandLine.Parser.Default.ParseArguments<LoginOptions, LogoutOptions, AddEntryOptions>(args)
             .MapResult(
                 (LoginOptions opts) => RunLogin(opts),
                 (LogoutOptions opts) => RunLogout(opts),
@@ -49,20 +25,8 @@ public class Client
         return result;
     }
 
-    public string SendCommand(string command)
-    {
-        byte[] buffer = Encoding.UTF8.GetBytes(command);
-        pipeClient.Write(buffer, 0, buffer.Length);
-
-        buffer = new byte[256];
-        int bytesRead = pipeClient.Read(buffer, 0, buffer.Length);
-
-        return Encoding.UTF8.GetString(buffer, 0, bytesRead);
-    }
-
     private int RunLogin(LoginOptions opts)
     {
-        Console.WriteLine("Success");
         var exitCode = 0;
         var props = opts.GetType().GetProperties();
         //foreach (var prop in props)

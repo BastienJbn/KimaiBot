@@ -1,6 +1,8 @@
 ﻿using KimaiAutoEntryCmdClient;
+using KimaiBotService;
 
-Client client = new();
+PipeClient client = new();
+Parser parser = new(client);
 
 if (!client.Connect())
 {
@@ -20,9 +22,10 @@ while (true)
     if (command == "exit")
         break;
 
-    // Send command to server
-    var result = client.HandleCommand(command);
+    // Parse Command and process it
+    var result = parser.HandleCommand(command);
 
+    // Display result to user
     Console.WriteLine(result);
 }
 

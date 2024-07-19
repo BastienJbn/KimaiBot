@@ -3,13 +3,16 @@ using System.IO.Pipes;
 namespace KimaiBotService;
 
 public sealed class WindowsBackgroundService(
-    KimaiBot server) : BackgroundService
+    KimaiBot bot) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        await Task.Run(() =>
         {
-            await server.HandlePipeServer();
-        }
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                bot.Loop();
+            }
+        }, stoppingToken);
     }
 }
