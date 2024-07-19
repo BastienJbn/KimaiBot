@@ -1,20 +1,16 @@
-﻿namespace KimaiAutoEntryCmdClient;
+﻿namespace KimaiBotCmdLine;
 
 using CommandLine;
-using KimaiBotService;
 
 class Parser(PipeClient pipeClient)
 {
     private PipeClient pipeClient = pipeClient;
 
-    public int HandleCommand(string? command)
+    public string HandleCommand(string command)
     {
-        if(command == null)
-            return -1;
-
         var args = command.Split();
 
-        var result = CommandLine.Parser.Default.ParseArguments<LoginOptions, LogoutOptions, AddEntryOptions>(args)
+        string result = CommandLine.Parser.Default.ParseArguments<LoginOptions, LogoutOptions, AddEntryOptions>(args)
             .MapResult(
                 (LoginOptions opts) => RunLogin(opts),
                 (LogoutOptions opts) => RunLogout(opts),
@@ -25,37 +21,24 @@ class Parser(PipeClient pipeClient)
         return result;
     }
 
-    private int RunLogin(LoginOptions opts)
+    private string RunLogin(LoginOptions opts)
     {
-        var exitCode = 0;
-        var props = opts.GetType().GetProperties();
-        //foreach (var prop in props)
-        Console.WriteLine("Username: {0}", opts.Username);
-        Console.WriteLine("Password: {0}", opts.Password);
-        return exitCode;
+        return pipeClient.SendReceive($"login {opts.Username} {opts.Password}");
     }
 
-    private int RunLogout(LogoutOptions opts)
+    private string RunLogout(LogoutOptions opts)
     {
-        Console.WriteLine("Success");
-        var exitCode = 0;
-        return exitCode;
+        return pipeClient.SendReceive("logout");
     }
 
-    private int RunAddEntry(AddEntryOptions opts)
+    private string RunAddEntry(AddEntryOptions opts)
     {
-        Console.WriteLine("Success");
-        var exitCode = 0;
-        return exitCode;
+        return "Success";
     }
 
-    private int HandleParseError(IEnumerable<Error> errs)
+    private string HandleParseError(IEnumerable<Error> errs)
     {
-        var result = -2;
-        Console.WriteLine("errors {0}", errs.Count());
-        if (errs.Any(x => x is HelpRequestedError || x is VersionRequestedError))
-            result = -1;
-        Console.WriteLine("Exit code {0}", result);
-        return result;
+        // Nothing to display. CommandLine library will display the error.
+        return "";
     }
 }

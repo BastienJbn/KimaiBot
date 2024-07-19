@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Pipes;
-using System.Linq;
+﻿using System.IO.Pipes;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace KimaiBotService;
+namespace KimaiBotCmdLine;
 class PipeClient
 {
-    private const string PipeName = "KimaiBotPipe";
-    private NamedPipeClientStream pipeStream = new(".", "KimaiBotPipe", PipeDirection.InOut);
+    private readonly NamedPipeClientStream pipeStream = new(".", "KimaiBotPipe", PipeDirection.InOut);
 
     public bool Connect()
     {
@@ -37,7 +32,7 @@ class PipeClient
 
         if (!pipeStream.IsConnected)
         {
-            return "Server not found!";
+            return "Server disconnected!";
         }
 
         byte[] txBuffer = Encoding.UTF8.GetBytes(command);
@@ -46,27 +41,15 @@ class PipeClient
         try
         {
             // Wait for response
-            while (true)
-            {
-                byte[] rxBuffer = new byte[256];
-                int bytesRead = pipeStream.Read(rxBuffer, 0, rxBuffer.Length);
-                if (bytesRead == 0)
-                    break; // Le client s'est déconnecté
+            byte[] rxBuffer = new byte[256];
+            int bytesRead = pipeStream.Read(rxBuffer, 0, rxBuffer.Length);
 
-                string response = Encoding.UTF8.GetString(rxBuffer, 0, bytesRead);
-                Console.WriteLine($"Response: {response}");
-
-                ret = response;
-            }
+            ret = Encoding.UTF8.GetString(rxBuffer, 0, bytesRead);
         }
         // Catch IOException that is raised if the pipe is broken or disconnected
         catch (IOException e)
         {
             ret = "!Error: " + e.Message;
-        }
-        finally
-        {
-            pipeStream.Close();
         }
 
         return ret;

@@ -1,5 +1,3 @@
-using System.IO.Pipes;
-
 namespace KimaiBotService;
 
 public sealed class WindowsBackgroundService(

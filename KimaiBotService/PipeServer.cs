@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Pipes;
-using System.Linq;
+﻿using System.IO.Pipes;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace KimaiBotService;
 
@@ -52,7 +48,7 @@ class PipeServer
             // Crée un serveur de pipe qui attend la connexion d'un client
             using (pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
             {
-                Console.WriteLine("En attente de connexion du client...");
+                Console.WriteLine("En attente de connexion du client...\n");
                 pipeServer.WaitForConnection();
                 Console.WriteLine("Client connecté.");
 
@@ -87,7 +83,7 @@ class PipeServer
                         pipeServer.Disconnect();
                     }
                 }
-                Console.WriteLine("Client déconnecté.");
+                Console.WriteLine("Client déconnecté.\n");
             }
         }
     }

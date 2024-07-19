@@ -1,8 +1,5 @@
 namespace KimaiBotService;
 
-using System.IO.Pipes;
-using System.Net.Http;
-
 public sealed class KimaiBot
 {
     private readonly System.Timers.Timer timer = new();
@@ -49,7 +46,7 @@ public sealed class KimaiBot
                     timer.Interval = 1000 * 60 * 60 * 24;
                     timer.Start();
 
-                    Console.WriteLine("Successfully logged in. User = " + username);
+                    Console.WriteLine("Successfully logged in.");
                     return "Successfully logged in.";
                 }
                 else
@@ -63,6 +60,11 @@ public sealed class KimaiBot
                 timer.Stop();
                 Console.WriteLine("Logged out.");
                 return "Successfully logged out.";
+
+            case "addEntry":
+                httpClient.AddEntryComboRnD();
+                Console.WriteLine("Added entry.");
+                return "Successfully added entry.";
 
             default:
                 Console.WriteLine("Invalid command.");

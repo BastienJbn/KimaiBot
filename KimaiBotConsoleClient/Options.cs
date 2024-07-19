@@ -1,14 +1,14 @@
-﻿namespace KimaiAutoEntryCmdClient;
+﻿namespace KimaiBotCmdLine;
 
 using CommandLine;
 
 [Verb("login", HelpText = "Login to Kimai.")]
 public class LoginOptions
 {
-    [Option('u', "username", Required = true, HelpText = "Username.")]
+    [Value(1, HelpText = "Username.", Required = true)]
     public required string Username { get; set; }
 
-    [Option('p', "password", Required = true, HelpText = "Password.")]
+    [Value(1, HelpText = "Password.", Required = true, Hidden = true)]
     public required string Password { get; set; }
 }
 
