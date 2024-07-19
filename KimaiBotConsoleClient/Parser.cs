@@ -33,7 +33,7 @@ class Parser(PipeClient pipeClient)
 
     private string RunAddEntry(AddEntryOptions opts)
     {
-        return "Success";
+        return pipeClient.SendReceive("addEntry");
     }
 
     private string HandleParseError(IEnumerable<Error> errs)

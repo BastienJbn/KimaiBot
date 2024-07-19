@@ -39,12 +39,18 @@ class KimaiHttpClient
 
         var response = client.PostAsync(loginHttpAddress, content).Result;
 
-        return response.IsSuccessStatusCode;
+        //Check response headers for cookies set "kimai_user" != 0
+        var cookies = handler.CookieContainer.GetCookies(new Uri(loginHttpAddress));
+        var kimaiUserCookie = cookies["kimai_user"];
+        if (kimaiUserCookie == null || kimaiUserCookie.Value == username)
+            return false;
+        else
+            return true;
     }
 
     public void Logout()
     {
-        handler.CookieContainer = new System.Net.CookieContainer();
+        handler.CookieContainer.SetCookies(new Uri(loginHttpAddress), "");
     }
 
     public bool AddEntryComboRnD()

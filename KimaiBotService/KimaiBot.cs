@@ -8,19 +8,9 @@ public sealed class KimaiBot
 
     private readonly PipeServer server = new();
 
-    public void Loop()
+    public void Start()
     {
-        server.StartServer();
-
-        while (true)
-        {
-            string? request = server.popCommand();
-            if (request != null)
-            {
-                string response = HandleCommand(request);
-                server.SendResponse(response);
-            }
-        }
+        server.Start();
     }
 
     private string HandleCommand(string request)

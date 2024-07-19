@@ -9,7 +9,11 @@ public sealed class WindowsBackgroundService(
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                bot.Loop();
+                bot.Start();
+
+                // Wait for the service to be stopped
+                // Tasks launched by the bot will continue to run
+                // until the service is stopped
             }
         }, stoppingToken);
     }
