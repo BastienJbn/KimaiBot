@@ -9,6 +9,8 @@
     <SignAssembly>False</SignAssembly>
     <AssemblyName>kimai</AssemblyName>
 
+	  <ApplicationManifest>app.manifest</ApplicationManifest>
+
 	<PublishSingleFile>true</PublishSingleFile>
 	<SelfContained>true</SelfContained> <!-- Optional: Set to true to include the .NET runtime -->
 	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract> <!-- Optional: Ensures all content is included in single-file -->
