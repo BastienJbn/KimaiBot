@@ -10,7 +10,7 @@ class PipeClient
     {
         try
         {
-            pipeStream.ConnectAsync(2000).Wait();
+            pipeStream.ConnectAsync(10000).Wait();
         }
         catch
         {

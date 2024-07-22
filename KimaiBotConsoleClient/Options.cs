@@ -8,7 +8,7 @@ public class LoginOptions
     [Value(1, HelpText = "Username.", Required = true)]
     public required string Username { get; set; }
 
-    [Value(1, HelpText = "Password.", Required = true, Hidden = true)]
+    [Value(2, HelpText = "Password.", Required = true)]
     public required string Password { get; set; }
 }
 

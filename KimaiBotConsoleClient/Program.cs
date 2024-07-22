@@ -22,7 +22,9 @@ class Program
             // Wait for user input
             Console.Write(">");
             var command = Console.ReadLine();
-            Console.WriteLine(command);
+
+            if(command == null || command == string.Empty)
+                continue;
 
             if (command == "exit")
                 break;

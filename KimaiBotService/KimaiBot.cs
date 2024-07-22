@@ -8,9 +8,27 @@ public sealed class KimaiBot
 
     private readonly PipeServer server = new();
 
-    public void Start()
+    public async Task Start(CancellationToken token)
     {
-        server.Start();
+        await Task.WhenAll(CommandHandler(token), server.Start(token));
+    }
+
+    private Task CommandHandler(CancellationToken token)
+    {
+        return Task.Run(() =>
+        {
+            while (true)
+            {
+                string request = server.GetRequest();
+
+                if(request == string.Empty) {
+                    continue;
+                }
+
+                string response = HandleCommand(request);
+                server.SendResponse(response);
+            }
+        });
     }
 
     private string HandleCommand(string request)
@@ -29,8 +47,11 @@ public sealed class KimaiBot
                 string username = args[1];
                 string password = args[2];
 
-                if (httpClient.Authenticate())
+                if (httpClient.Authenticate(username, password))
                 {
+                    // Add entry immediately
+                    httpClient.AddEntryComboRnD();
+
                     // Start timer. Trigger each day at 10am
                     timer.Elapsed += (sender, e) => httpClient.AddEntryComboRnD();
                     timer.Interval = 1000 * 60 * 60 * 24;

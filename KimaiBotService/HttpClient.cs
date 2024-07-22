@@ -13,8 +13,6 @@ class KimaiHttpClient
 
     private readonly string loginHttpAddress = "http://frapp01/kimai/index.php?a=checklogin";
     private readonly string processorHttpAddress = "http://frapp01/kimai/extensions/ki_timesheets/processor.php";
-    private readonly string username = "";
-    private readonly string password = "";
 
     public KimaiHttpClient()
     {
@@ -29,7 +27,7 @@ class KimaiHttpClient
         };
     }
 
-    public bool Authenticate()
+    public bool Authenticate(string username, string password)
     {
         var content = new FormUrlEncodedContent(
         [
@@ -39,13 +37,13 @@ class KimaiHttpClient
 
         var response = client.PostAsync(loginHttpAddress, content).Result;
 
-        //Check response headers for cookies set "kimai_user" != 0
+        //Check response
         var cookies = handler.CookieContainer.GetCookies(new Uri(loginHttpAddress));
         var kimaiUserCookie = cookies["kimai_user"];
-        if (kimaiUserCookie == null || kimaiUserCookie.Value == username)
-            return false;
-        else
+        if(kimaiUserCookie != null &&  kimaiUserCookie.Value == username)
             return true;
+        else
+            return false;
     }
 
     public void Logout()
