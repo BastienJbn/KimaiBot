@@ -1,8 +1,12 @@
 ﻿using System.IO.Pipes;
 using System.Text;
+using System.Security.AccessControl;
+using System.Security.Principal;
+using System.Runtime.Versioning;
 
 namespace KimaiBotService;
 
+[SupportedOSPlatform("windows")]
 class PipeServer
 {
     private const string PipeName = "KimaiBotPipe";
@@ -37,6 +41,11 @@ class PipeServer
 
     private void ServerLoop()
     {
+        // Allow the current user to read/write
+        var pipeSecurity = new PipeSecurity();
+        var currentUser = WindowsIdentity.GetCurrent().Name;
+        pipeSecurity.AddAccessRule(new PipeAccessRule(currentUser, PipeAccessRights.FullControl, AccessControlType.Allow));
+
         // Crée un serveur de pipe qui attend la connexion d'un client
         Console.WriteLine("En attente de connexion du client...\n");
         pipeServer.WaitForConnection();
@@ -63,8 +72,6 @@ class PipeServer
             {
                 Console.WriteLine($"Erreur de communication avec le client : {e.Message}");
             }
-
-            Console.WriteLine("Client déconnecté.\n");
         }
     }
 
