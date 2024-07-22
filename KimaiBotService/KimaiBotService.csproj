@@ -5,12 +5,18 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-KimaiAutoEntry-3819a98f-8e50-4961-acac-531a2093654d</UserSecretsId>
-
+	  
     <OutputType>exe</OutputType>
     <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    
+	<ApplicationManifest>app.manifest</ApplicationManifest>
+	
+	<PublishSingleFile>true</PublishSingleFile>
+	<SelfContained>true</SelfContained> <!-- Optional: Set to true to include the .NET runtime -->
+	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract> <!-- Optional: Ensures all content is included in single-file -->
 
   </PropertyGroup>
 

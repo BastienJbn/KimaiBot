@@ -5,6 +5,22 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
+    <SignAssembly>False</SignAssembly>
+    <AssemblyName>kimai</AssemblyName>
+
+	<PublishSingleFile>true</PublishSingleFile>
+	<SelfContained>true</SelfContained> <!-- Optional: Set to true to include the .NET runtime -->
+	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract> <!-- Optional: Ensures all content is included in single-file -->
+
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
