@@ -2,6 +2,11 @@ using KimaiBotService;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;
 using System.Reflection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
+using System.IO;
 
 using CliWrap;
 
@@ -51,14 +56,10 @@ builder.Services.AddWindowsService(options =>
     options.ServiceName = ServiceName;
 });
 
-if (OperatingSystem.IsWindows())
-{
-    LoggerProviderOptions.RegisterProviderOptions<
-        EventLogSettings, EventLogLoggerProvider>(builder.Services);
-}
+LoggerProviderOptions.RegisterProviderOptions<
+    EventLogSettings, EventLogLoggerProvider>(builder.Services);
 
 builder.Services.AddSingleton<KimaiBot>();
 builder.Services.AddHostedService<WindowsBackgroundService>();
-
 IHost host = builder.Build();
 host.Run();

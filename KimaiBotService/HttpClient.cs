@@ -1,8 +1,6 @@
 ﻿using System;
+using System.Net.Http;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KimaiBotService;
 
@@ -35,7 +33,7 @@ class KimaiHttpClient
             new KeyValuePair<string, string>("password", password)
         ]);
 
-        var response = client.PostAsync(loginHttpAddress, content).Result;
+        _ = client.PostAsync(loginHttpAddress, content).Result;
 
         //Check response
         var cookies = handler.CookieContainer.GetCookies(new Uri(loginHttpAddress));

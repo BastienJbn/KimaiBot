@@ -1,5 +1,11 @@
+using System.Runtime.Versioning;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
+
 namespace KimaiBotService;
 
+[SupportedOSPlatform("windows")]
 public sealed class KimaiBot
 {
     private readonly System.Timers.Timer timer = new();
@@ -28,7 +34,7 @@ public sealed class KimaiBot
                 string response = HandleCommand(request);
                 server.SendResponse(response);
             }
-        });
+        }, token);
     }
 
     private string HandleCommand(string request)

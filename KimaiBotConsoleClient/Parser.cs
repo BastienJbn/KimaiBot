@@ -1,6 +1,8 @@
 ﻿namespace KimaiBotCmdLine;
 
 using CommandLine;
+using System;
+using System.Collections.Generic;
 
 class Parser(PipeClient pipeClient)
 {
@@ -12,13 +14,23 @@ class Parser(PipeClient pipeClient)
 
         string result = CommandLine.Parser.Default.ParseArguments<LoginOptions, LogoutOptions, AddEntryOptions>(args)
             .MapResult(
-                (LoginOptions opts) => RunLogin(opts),
-                (LogoutOptions opts) => RunLogout(opts),
-                (AddEntryOptions opts) => RunAddEntry(opts),
+                (LoginOptions opts) => ExecuteWithConnection(() => RunLogin(opts)),
+                (LogoutOptions opts) => ExecuteWithConnection(() => RunLogout(opts)),
+                (AddEntryOptions opts) => ExecuteWithConnection(() => RunAddEntry(opts)),
                 errs => HandleParseError(errs)
             );
 
         return result;
+    }
+
+    private string ExecuteWithConnection(Func<string> runFunction)
+    {
+        if (!pipeClient.Connect())
+        {
+            return "Failed to connect to the pipe server!";
+        }
+
+        return runFunction();
     }
 
     private string RunLogin(LoginOptions opts)

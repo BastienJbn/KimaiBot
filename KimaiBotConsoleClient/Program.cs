@@ -1,4 +1,5 @@
 ﻿using KimaiBotCmdLine;
+using System;
 
 class Program
 {
@@ -23,7 +24,7 @@ class Program
             Console.Write(">");
             var command = Console.ReadLine();
 
-            if(command == null || command == string.Empty)
+            if (command is null)
                 continue;
 
             if (command == "exit")
@@ -48,12 +49,6 @@ class Program
 
         if(args.Length == 0)
         {
-            Environment.Exit(1);
-        }
-
-        if (!client.Connect())
-        {
-            Console.WriteLine("Failed to connect to the server!");
             Environment.Exit(1);
         }
 

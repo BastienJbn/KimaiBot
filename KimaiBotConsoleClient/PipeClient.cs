@@ -1,4 +1,5 @@
-﻿using System.IO.Pipes;
+﻿using System.IO;
+using System.IO.Pipes;
 using System.Text;
 
 namespace KimaiBotCmdLine;
