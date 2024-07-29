@@ -20,6 +20,8 @@ class Parser(PipeClient pipeClient)
                 errs => HandleParseError(errs)
             );
 
+        pipeClient.Disconnect();
+
         return result;
     }
 
@@ -50,7 +52,6 @@ class Parser(PipeClient pipeClient)
 
     private string HandleParseError(IEnumerable<Error> errs)
     {
-        // Nothing to display. CommandLine library will display the error.
         return "";
     }
 }

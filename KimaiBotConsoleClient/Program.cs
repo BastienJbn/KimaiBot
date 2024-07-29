@@ -10,12 +10,6 @@ class Program
         PipeClient client = new();
         Parser parser = new(client);
 
-        if (!client.Connect())
-        {
-            Console.WriteLine("Failed to connect to the server!");
-            return;
-        }
-
         Console.WriteLine("Start ! Type 'exit' to quit.");
 
         while (true)
@@ -36,8 +30,6 @@ class Program
             // Display result to user
             Console.WriteLine(result);
         }
-
-        client.Disconnect();
     }
 #else
 

@@ -2,6 +2,7 @@ using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace KimaiBotService;
 
@@ -9,13 +10,18 @@ namespace KimaiBotService;
 public sealed class KimaiBot
 {
     private readonly System.Timers.Timer timer = new();
-
     private readonly KimaiHttpClient httpClient = new();
-
     private readonly PipeServer server = new();
+    private readonly ILogger<KimaiBot> logger;
+
+    public KimaiBot(ILogger<KimaiBot> logger)
+    {
+        this.logger = logger;
+    }
 
     public async Task Start(CancellationToken token)
     {
+        logger.LogInformation("Starting KimaiBot service.");
         await Task.WhenAll(CommandHandler(token), server.Start(token));
     }
 
@@ -53,6 +59,8 @@ public sealed class KimaiBot
                 string username = args[1];
                 string password = args[2];
 
+                logger.LogInformation("Tentative d'authentification...");
+
                 if (httpClient.Authenticate(username, password))
                 {
                     // Add entry immediately
@@ -63,28 +71,28 @@ public sealed class KimaiBot
                     timer.Interval = 1000 * 60 * 60 * 24;
                     timer.Start();
 
-                    Console.WriteLine("Successfully logged in.");
+                    logger.LogInformation("Authentification réussie.");
                     return "Successfully logged in.";
                 }
                 else
                 {
-                    Console.WriteLine("Failed to log in.");
+                    logger.LogError("Authentification échouée.");
                     return "Failed to log in.";
                 }
 
             case "logout":
                 httpClient.Logout();
                 timer.Stop();
-                Console.WriteLine("Logged out.");
+                logger.LogInformation("Utilisateur déconnecté.");
                 return "Successfully logged out.";
 
             case "addEntry":
                 httpClient.AddEntryComboRnD();
-                Console.WriteLine("Added entry.");
+                logger.LogInformation("Entrée ajoutée.");
                 return "Successfully added entry.";
 
             default:
-                Console.WriteLine("Invalid command.");
+                logger.LogWarning("Commande reçue invalide.");
                 return "Invalid command.";
         }
     }

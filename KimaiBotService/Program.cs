@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 
@@ -59,7 +59,7 @@ builder.Services.AddWindowsService(options =>
 LoggerProviderOptions.RegisterProviderOptions<
     EventLogSettings, EventLogLoggerProvider>(builder.Services);
 
-builder.Services.AddSingleton<KimaiBot>();
+builder.Services.AddLogging(configure => configure.AddConsole());
 builder.Services.AddHostedService<WindowsBackgroundService>();
 IHost host = builder.Build();
 host.Run();

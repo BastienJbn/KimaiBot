@@ -5,12 +5,13 @@ using System.Text;
 namespace KimaiBotCmdLine;
 class PipeClient
 {
-    private readonly NamedPipeClientStream pipeStream = new(".", "KimaiBotPipe", PipeDirection.InOut);
+    private NamedPipeClientStream? pipeStream;
 
     public bool Connect()
     {
         try
         {
+            pipeStream = new(".", "KimaiBotPipe", PipeDirection.InOut);
             pipeStream.ConnectAsync(10000).Wait();
         }
         catch
@@ -23,21 +24,26 @@ class PipeClient
 
     public void Disconnect()
     {
-        pipeStream.Close();
+        if(pipeStream != null && pipeStream.IsConnected)
+        {
+            pipeStream.Close();
+        }
     }
 
     // Send a command and expect a response in async
     public string SendReceive(string command)
     {
-        string ret = "";
+        string ret;
+
+        if (pipeStream == null)
+            return "Pipe not connected!";
 
         if (!pipeStream.IsConnected)
-        {
             return "Server disconnected!";
-        }
 
         byte[] txBuffer = Encoding.UTF8.GetBytes(command);
         pipeStream.Write(txBuffer, 0, txBuffer.Length);
+        pipeStream.Flush();
 
         try
         {
