@@ -12,7 +12,7 @@ class PipeClient
         try
         {
             pipeStream = new(".", "KimaiBotPipe", PipeDirection.InOut);
-            pipeStream.ConnectAsync(10000).Wait();
+            pipeStream.ConnectAsync(5000).Wait();
         }
         catch
         {
