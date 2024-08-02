@@ -43,6 +43,7 @@ class PipeServer
 
         byte[] buffer = Encoding.UTF8.GetBytes(response);
         pipeServer.Write(buffer, 0, buffer.Length);
+        pipeServer.Flush();
     }
 
     private void ServerLoop()
@@ -55,9 +56,10 @@ class PipeServer
                 // Allow the current user to read/write
                 var pipeSecurity = new PipeSecurity();
                 var currentUser = WindowsIdentity.GetCurrent().Name;
-                pipeSecurity.AddAccessRule(new PipeAccessRule(currentUser, PipeAccessRights.FullControl, AccessControlType.Allow));
+                var authenticatedUsersSid = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+                pipeSecurity.AddAccessRule(new PipeAccessRule(authenticatedUsersSid, PipeAccessRights.FullControl, AccessControlType.Allow));
 
-            pipeServer = NamedPipeServerStreamAcl.Create(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None, 0, 0, pipeSecurity);
+                pipeServer = NamedPipeServerStreamAcl.Create(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None, 0, 0, pipeSecurity);
             }
             // Catch IOexception if the pipe is already in use
             catch (IOException e)
@@ -72,7 +74,7 @@ class PipeServer
             Console.WriteLine("Client connecté.");
 
             byte[] buffer = new byte[256];
-            int bytesRead = 0;
+            int bytesRead;
 
             do
             {

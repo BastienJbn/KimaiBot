@@ -33,7 +33,13 @@ class KimaiHttpClient
             new KeyValuePair<string, string>("password", password)
         ]);
 
-        _ = client.PostAsync(loginHttpAddress, content).Result;
+        try
+        {
+            _ = client.PostAsync(loginHttpAddress, content).Result;
+        }
+        catch {
+            return false;
+        }
 
         //Check response
         var cookies = handler.CookieContainer.GetCookies(new Uri(loginHttpAddress));

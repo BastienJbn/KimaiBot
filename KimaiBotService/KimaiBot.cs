@@ -7,17 +7,12 @@ using Microsoft.Extensions.Logging;
 namespace KimaiBotService;
 
 [SupportedOSPlatform("windows")]
-public sealed class KimaiBot
+public sealed class KimaiBot(ILogger<KimaiBot> logger)
 {
     private readonly System.Timers.Timer timer = new();
     private readonly KimaiHttpClient httpClient = new();
     private readonly PipeServer server = new();
-    private readonly ILogger<KimaiBot> logger;
-
-    public KimaiBot(ILogger<KimaiBot> logger)
-    {
-        this.logger = logger;
-    }
+    private readonly ILogger<KimaiBot> logger = logger;
 
     public async Task Start(CancellationToken token)
     {
