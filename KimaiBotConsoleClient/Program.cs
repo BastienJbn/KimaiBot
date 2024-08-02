@@ -41,7 +41,7 @@ class Program
 
         if(args.Length == 0)
         {
-            Environment.Exit(1);
+            Environment.Exit(0);
         }
 
         string command = string.Join(" ", args);

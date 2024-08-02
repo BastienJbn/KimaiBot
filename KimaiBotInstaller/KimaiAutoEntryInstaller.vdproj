@@ -15,13 +15,7 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_579D74E711CA48F48DA6DF61610CDD71"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_CBCC8E05F2EC4A53B006CDB798A3D53E"
+        "MsmKey" = "8:_EB2AECEDC1304A7EB38B189A6BC97B6C"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -86,8 +80,13 @@
                 {
                     "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
                     {
-                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 et x64)"
                     "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.NetCore.CoreRuntime.8.0.x64"
+                    {
+                    "Name" = "8:Runtime .NET 8.0.7 (x64)"
+                    "ProductCode" = "8:Microsoft.NetCore.CoreRuntime.8.0.x64"
                     }
                 }
             }
@@ -97,59 +96,59 @@
     {
         "CustomAction"
         {
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_8E17F131634045E398DA01A2EB8DD946"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_1F91F86BDFC141E681A5DB2FC5BC1361"
             {
-            "Name" = "8:Éléments de publication from KimaiBotService (Active)"
+            "Name" = "8:KimaiBotService (Release Any CPU)"
             "Condition" = "8:"
-            "Object" = "8:_579D74E711CA48F48DA6DF61610CDD71"
-            "FileType" = "3:2"
-            "InstallAction" = "3:4"
-            "Arguments" = "8:/Uninstall"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:2"
-            "Identifier" = "8:_C4ECCD51_8433_4F06_8D02_D6ADA43A71AA"
-            "InstallerClass" = "11:FALSE"
-            "CustomActionData" = "8:"
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_8F89EEAA06ED4CD2919BAA72C595A07B"
-            {
-            "Name" = "8:Éléments de publication from KimaiBotCmdLine (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_CBCC8E05F2EC4A53B006CDB798A3D53E"
-            "FileType" = "3:2"
-            "InstallAction" = "3:1"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_4DF57BFF_8E3B_484E_8D96_06A72208A432"
-            "InstallerClass" = "11:FALSE"
-            "CustomActionData" = "8:"
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_C255FD3C615D4312AE8ECB99419B1B83"
-            {
-            "Name" = "8:Éléments de publication from KimaiBotCmdLine (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_CBCC8E05F2EC4A53B006CDB798A3D53E"
-            "FileType" = "3:2"
-            "InstallAction" = "3:4"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_03A6C69E_6472_4C08_90A9_EBC48D9FE697"
-            "InstallerClass" = "11:FALSE"
-            "CustomActionData" = "8:"
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_CE2ECA3F14E94811A4D714A1ECC1CCFD"
-            {
-            "Name" = "8:Éléments de publication from KimaiBotService (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_579D74E711CA48F48DA6DF61610CDD71"
+            "Object" = "8:_EB2AECEDC1304A7EB38B189A6BC97B6C"
             "FileType" = "3:2"
             "InstallAction" = "3:1"
             "Arguments" = "8:/Install"
             "EntryPoint" = "8:"
             "Sequence" = "3:2"
-            "Identifier" = "8:_DEC74F2D_D0B8_42D4_9327_7E36FB93CA27"
+            "Identifier" = "8:_C21F8F29_A073_4A53_AB0C_091035E89AE7"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_690F03A7D6DD49E2B350BB6091E7EC22"
+            {
+            "Name" = "8:KimaiBotService (Release Any CPU)"
+            "Condition" = "8:"
+            "Object" = "8:_EB2AECEDC1304A7EB38B189A6BC97B6C"
+            "FileType" = "3:2"
+            "InstallAction" = "3:4"
+            "Arguments" = "8:/Uninstall"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:2"
+            "Identifier" = "8:_2B4A771E_5952_49CE_B2C9_2C8EF82B170C"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_700711C9F6574A9A8D52ED6E130B80FA"
+            {
+            "Name" = "8:KimaiBotCmdLine (Release Any CPU)"
+            "Condition" = "8:"
+            "Object" = "8:_F6E2D71A00134EC3A2D727AAF1080EC3"
+            "FileType" = "3:2"
+            "InstallAction" = "3:1"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_53ECF5C4_DB58_4A78_A5B6_DD8B43EC2B6B"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_FDF70B15E186489C81691C05073B1687"
+            {
+            "Name" = "8:KimaiBotCmdLine (Release Any CPU)"
+            "Condition" = "8:"
+            "Object" = "8:_F6E2D71A00134EC3A2D727AAF1080EC3"
+            "FileType" = "3:2"
+            "InstallAction" = "3:4"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_30AFD7AA_A3C0_44B9_BF08_842A7C94ECDC"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
@@ -235,13 +234,13 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:KimaiBotInstaller"
         "ProductCode" = "8:{9EDFD1A4-5866-4DF5-8893-2B39B193796C}"
-        "PackageCode" = "8:{A74D0844-F705-45B2-BB8F-5EF794448E54}"
+        "PackageCode" = "8:{792D01C0-FA59-42A4-8CB0-DECEF0640EB2}"
         "UpgradeCode" = "8:{7D47E919-5ADF-4458-9AA5-A56FD2560F4B}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
-        "DetectNewerInstalledVersion" = "11:TRUE"
-        "InstallAllUsers" = "11:FALSE"
+        "DetectNewerInstalledVersion" = "11:FALSE"
+        "InstallAllUsers" = "11:TRUE"
         "ProductVersion" = "8:1.0.0"
         "Manufacturer" = "8:BastienJbn"
         "ARPHELPTELEPHONE" = "8:"
@@ -754,9 +753,9 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_579D74E711CA48F48DA6DF61610CDD71"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_EB2AECEDC1304A7EB38B189A6BC97B6C"
             {
-            "SourcePath" = "8:..\\KimaiBotService\\bin\\Release\\net8.0\\win-x64\\publish\\KimaiBotService.exe"
+            "SourcePath" = "8:..\\KimaiBotService\\bin\\Release\\net8.0-windows10.0.22621.0\\win-x64\\publish\\KimaiBotService.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_A58F735B09DB42D49002822257EEE665"
@@ -774,7 +773,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
+            "OutputConfiguration" = "8:Release|Any CPU"
             "OutputGroupCanonicalName" = "8:PublishItems"
             "OutputProjectGuid" = "8:{DF564013-2D1A-452A-8B10-04F17FDAB5BA}"
             "ShowKeyOutput" = "11:TRUE"
@@ -782,9 +781,9 @@
                 {
                 }
             }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_CBCC8E05F2EC4A53B006CDB798A3D53E"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_F6E2D71A00134EC3A2D727AAF1080EC3"
             {
-            "SourcePath" = "8:..\\KimaiBotConsoleClient\\obj\\Release\\net8.0\\apphost.exe"
+            "SourcePath" = "8:..\\KimaiBotConsoleClient\\bin\\Release\\net8.0-windows10.0.22621.0\\win-x64\\publish\\kimai.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_A58F735B09DB42D49002822257EEE665"
@@ -802,7 +801,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
+            "OutputConfiguration" = "8:Release|Any CPU"
             "OutputGroupCanonicalName" = "8:PublishItems"
             "OutputProjectGuid" = "8:{2B1BEE3E-1B8D-4DFD-8D58-448E7BF13BC8}"
             "ShowKeyOutput" = "11:TRUE"
