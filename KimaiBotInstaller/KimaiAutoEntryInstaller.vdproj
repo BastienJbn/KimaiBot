@@ -15,6 +15,12 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_60F51CA544F347A7809C034F784FEEE1"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_EB2AECEDC1304A7EB38B189A6BC97B6C"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -177,6 +183,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_60F51CA544F347A7809C034F784FEEE1"
+            {
+            "SourcePath" = "8:KimaiBot_icon.ico"
+            "TargetName" = "8:KimaiBot_icon.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_A58F735B09DB42D49002822257EEE665"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -245,13 +271,13 @@
         "Manufacturer" = "8:BastienJbn"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:KimaiAutoEntryInstaller"
+        "Title" = "8:KimaiBotInstaller"
         "Subject" = "8:"
         "ARPCONTACT" = "8:BastienJbn"
         "Keywords" = "8:"
-        "ARPCOMMENTS" = "8:"
+        "ARPCOMMENTS" = "8:Installer for KimaiBot Windows Service."
         "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_60F51CA544F347A7809C034F784FEEE1"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
