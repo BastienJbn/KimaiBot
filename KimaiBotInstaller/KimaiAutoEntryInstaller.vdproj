@@ -258,9 +258,9 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:KimaiBotInstaller"
+        "ProductName" = "8:KimaiBot"
         "ProductCode" = "8:{9EDFD1A4-5866-4DF5-8893-2B39B193796C}"
-        "PackageCode" = "8:{792D01C0-FA59-42A4-8CB0-DECEF0640EB2}"
+        "PackageCode" = "8:{580349DD-3D67-4ED1-8040-39763CFE645D}"
         "UpgradeCode" = "8:{7D47E919-5ADF-4458-9AA5-A56FD2560F4B}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
