@@ -20,22 +20,20 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         await Task.WhenAll(CommandHandler(token), server.Start(token));
     }
 
-    private Task CommandHandler(CancellationToken token)
+    private async Task CommandHandler(CancellationToken token)
     {
-        return Task.Run(() =>
+        while (!token.IsCancellationRequested)
         {
-            while (true)
+            string request = await server.GetRequestAsync(token);
+
+            if (string.IsNullOrEmpty(request))
             {
-                string request = server.GetRequest();
-
-                if(request == string.Empty) {
-                    continue;
-                }
-
-                string response = HandleCommand(request);
-                server.SendResponse(response);
+                continue;
             }
-        }, token);
+
+            string response = HandleCommand(request);
+            server.SendResponse(response);
+        }
     }
 
     private string HandleCommand(string request)
@@ -82,9 +80,16 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 return "Successfully logged out.";
 
             case "addEntry":
-                httpClient.AddEntryComboRnD();
-                logger.LogInformation("Entrée ajoutée.");
-                return "Successfully added entry.";
+                if(httpClient.AddEntryComboRnD())
+                {
+                    logger.LogInformation("Entrée ajoutée.");
+                    return "Successfully added entry.";
+                }
+                else
+                {
+                    logger.LogError("Échec de l'ajout de l'entrée.");
+                    return "Failed to add entry.";
+                }
 
             default:
                 logger.LogWarning("Commande reçue invalide.");

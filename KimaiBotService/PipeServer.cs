@@ -107,15 +107,22 @@ class PipeServer
         }
     }
 
-    public string GetRequest()
+    public async Task<string> GetRequestAsync(CancellationToken token)
     {
-        if (commandList.Count == 0)
+        // Use Task.Run to simulate asynchronous operation
+        return await Task.Run(() =>
         {
-            return string.Empty;
-        }
+            // Check for cancellation before processing
+            token.ThrowIfCancellationRequested();
 
-        string command = commandList[0];
-        commandList.RemoveAt(0);
-        return command;
+            if (commandList.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            string command = commandList[0];
+            commandList.RemoveAt(0);
+            return command;
+        }, token);
     }
 }

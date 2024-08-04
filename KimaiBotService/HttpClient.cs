@@ -76,8 +76,14 @@ class KimaiHttpClient
         };
 
         var content = new FormUrlEncodedContent(payload);
-        var response = client.PostAsync(processorHttpAddress, content).Result;
-
-        return response.IsSuccessStatusCode;
+        try
+        {
+            var response = client.PostAsync(processorHttpAddress, content).Result;
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        { 
+            return false;
+        }
     }
 }
