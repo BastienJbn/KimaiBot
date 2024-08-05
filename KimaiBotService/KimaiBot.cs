@@ -21,6 +21,10 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
     DateTime? triggerTime = null;
     TimeSpan timerInterval = new(0, 1, 0); // 1 minute by default
 
+    /**
+     * Start the KimaiBot service.
+     * @param token The cancellation token.
+     */
     public async Task Start(CancellationToken token)
     {
         logger.LogInformation("Starting KimaiBot service.");
@@ -32,6 +36,10 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         await Task.WhenAll(CommandHandler(token), server.Start(token));
     }
 
+    /**
+     * Handle commands received from the client.
+     * @param token The cancellation token.
+     */
     private async Task CommandHandler(CancellationToken token)
     {
         while (!token.IsCancellationRequested)
@@ -48,7 +56,10 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         }
     }
 
-    // Start timer to elapsed at the defined time
+    /**
+     * Set the time at which the timer should trigger.
+     * @param time The time at which the timer should trigger.
+     */
     private void StartTimer() {
         if (triggerTime == null)
         {
@@ -76,6 +87,11 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         timer.Start();
     }
 
+    /**
+     * Handle the command received from the client.
+     * @param request The command received from the client.
+     * @return The response to the client.
+     */
     private string HandleCommand(string request)
     {
         string[] args = request.Split(' ');
@@ -143,6 +159,10 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         }
     }
 
+    /**
+     * Periodic task that runs every time the timer elapses.
+     * This task is responsible for adding an entry to Kimai.
+     */
     private void PeriodicTask(object? sender, System.Timers.ElapsedEventArgs e)
     {
         if(username != null && password != null)
