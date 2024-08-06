@@ -74,7 +74,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
             }
 
             string response = HandleCommand(request);
-            server.SendResponse(response);
+            await server.SendResponseAsync(response);
         }
     }
 

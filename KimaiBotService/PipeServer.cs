@@ -22,9 +22,9 @@ class PipeServer
 
     public Task Start(CancellationToken token)
     {
-        return Task.Run(() => ServerLoop(), token);
+        return Task.Run(() => ServerLoop(token), token);
     }
-    
+
     public void Stop()
     {
         if (pipeServer != null)
@@ -33,24 +33,24 @@ class PipeServer
         }
     }
 
-    public void SendResponse(string response)
+    public async Task SendResponseAsync(string response)
     {
-        if(pipeServer == null)
+        if (pipeServer == null)
         {
             Console.WriteLine("Error: pipeServer is null.");
             return;
         }
 
         byte[] buffer = Encoding.UTF8.GetBytes(response);
-        pipeServer.Write(buffer, 0, buffer.Length);
-        pipeServer.Flush();
+        await pipeServer.WriteAsync(buffer, 0, buffer.Length);
+        await pipeServer.FlushAsync();
     }
 
-    private void ServerLoop()
+    private async Task ServerLoop(CancellationToken token)
     {
-        while (true)
+        while (!token.IsCancellationRequested)
         {
-            // Create a new stream for each connexion
+            // Create a new stream for each connection
             try
             {
                 // Allow the current user to read/write
@@ -59,29 +59,29 @@ class PipeServer
                 var authenticatedUsersSid = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
                 pipeSecurity.AddAccessRule(new PipeAccessRule(authenticatedUsersSid, PipeAccessRights.FullControl, AccessControlType.Allow));
 
-                pipeServer = NamedPipeServerStreamAcl.Create(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None, 0, 0, pipeSecurity);
+                pipeServer = NamedPipeServerStreamAcl.Create(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
             }
-            // Catch IOexception if the pipe is already in use
+            // Catch IOException if the pipe is already in use
             catch (IOException e)
             {
                 Console.WriteLine($"Erreur ! Serveur déjà en cours d'exécution : {e.Message}");
                 return;
             }
 
-            // Wait for connexion
+            // Wait for connection
             Console.WriteLine("\nEn attente de connexion du client...\n");
-            pipeServer.WaitForConnection();
+            await pipeServer.WaitForConnectionAsync(token);
             Console.WriteLine("Client connecté.");
 
             byte[] buffer = new byte[256];
             int bytesRead;
 
-            do
+            while (pipeServer.IsConnected && !token.IsCancellationRequested)
             {
                 try
                 {
-                    // Read command
-                    bytesRead = pipeServer.Read(buffer, 0, buffer.Length);
+                    // Read command asynchronously
+                    bytesRead = await pipeServer.ReadAsync(buffer, 0, buffer.Length, token);
                 }
                 // Catch IOException that is raised if the pipe is broken or disconnected
                 catch (IOException e)
@@ -99,7 +99,6 @@ class PipeServer
                     commandList.Add(command);
                 }
             }
-            while (bytesRead != 0);
 
             // Close Server after client disconnection
             pipeServer.Disconnect();
