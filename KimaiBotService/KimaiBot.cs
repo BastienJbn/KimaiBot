@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using System.IO;
 
 namespace KimaiBotService;
 
@@ -17,6 +19,8 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
     private string? username = null;
     private string? password = null;
     private bool isAuthenticated = false;
+
+    private const string USER_PREFS_FILE = "user_prefs.json";
 
     DateTime? triggerTime = null;
     TimeSpan timerInterval = new(0, 1, 0); // 1 minute by default
@@ -33,6 +37,24 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         timer.Elapsed += PeriodicTask;
         timer.AutoReset = true;
 
+        // Read user preferences from file
+        if(File.Exists(USER_PREFS_FILE))
+        {
+            UserPrefs? userPrefs = JsonSerializer.Deserialize<UserPrefs>(File.ReadAllText(USER_PREFS_FILE));
+            if(userPrefs != null)
+            {
+                username = userPrefs.Username;
+                password = userPrefs.Password;
+
+                // Start timer
+                StartTimerByInterval(timerInterval);
+            }
+        }
+
+        // Execute periodic task once to add an entry immediately if possible
+        PeriodicTask(null, null);
+
+        // Start command handler and server
         await Task.WhenAll(CommandHandler(token), server.Start(token));
     }
 
@@ -72,9 +94,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
         // If time is negative, add a day
         if(timeUntilTrigger.TotalMilliseconds < 0)
-        {
             timeUntilTrigger = timeUntilTrigger.Add(new TimeSpan(1, 0, 0, 0));
-        }
 
         // Start timer
         timer.Interval = timeUntilTrigger.TotalMilliseconds;
@@ -108,6 +128,8 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 username = args[1];
                 password = args[2];
 
+                WriteCredsToFile(username, password);
+
                 logger.LogInformation("Tentative d'authentification...");
 
                 if(httpClient.Authenticate(username, password))
@@ -131,14 +153,21 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 }
 
             case "logout":
+                // Clear user credentials
                 username = null;
                 password = null;
                 isAuthenticated = false;
 
+                // Log out of Kimai
                 httpClient.Logout();
-                timer.Stop();
-                logger.LogInformation("Utilisateur déconnecté.");
 
+                // Stop timer
+                timer.Stop();
+
+                // Clear user preferences file
+                File.Delete(USER_PREFS_FILE);
+
+                logger.LogInformation("Utilisateur déconnecté.");
                 return "Successfully logged out.";
 
             case "addEntry":
@@ -163,7 +192,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
      * Periodic task that runs every time the timer elapses.
      * This task is responsible for adding an entry to Kimai.
      */
-    private void PeriodicTask(object? sender, System.Timers.ElapsedEventArgs e)
+    private void PeriodicTask(object? sender, System.Timers.ElapsedEventArgs? e)
     {
         if(username != null && password != null)
         {
@@ -212,5 +241,15 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 }
             }
         }
+    }
+
+    private void WriteCredsToFile(string username, string password)
+    {
+        UserPrefs userPrefs = new(username, password);
+        if(!File.Exists(USER_PREFS_FILE))
+        {
+            File.Create(USER_PREFS_FILE).Close();
+        }
+        File.WriteAllText(USER_PREFS_FILE, JsonSerializer.Serialize(userPrefs));
     }
 }
