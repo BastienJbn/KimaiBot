@@ -16,14 +16,11 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
     private readonly PipeServer server = new();
     private readonly ILogger<KimaiBot> logger = logger;
 
-    private string? username = null;
-    private string? password = null;
-    private bool isAuthenticated = false;
-
-    private const string USER_PREFS_FILE = "user_prefs.json";
-
     DateTime? triggerTime = null;
     TimeSpan timerInterval = new(0, 1, 0); // 1 minute by default
+
+    private bool isAuthenticated = false;
+    private UserPrefs userPrefs = new();
 
     /**
      * Start the KimaiBot service.
@@ -33,23 +30,12 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
     {
         logger.LogInformation("Starting KimaiBot service.");
 
+        // Load user preferences
+        userPrefs = UserPrefs.Load();
+
         // Init timer
         timer.Elapsed += PeriodicTask;
         timer.AutoReset = true;
-
-        // Read user preferences from file
-        if(File.Exists(USER_PREFS_FILE))
-        {
-            UserPrefs? userPrefs = JsonSerializer.Deserialize<UserPrefs>(File.ReadAllText(USER_PREFS_FILE));
-            if(userPrefs != null)
-            {
-                username = userPrefs.Username;
-                password = userPrefs.Password;
-
-                // Start timer
-                StartTimerByInterval(timerInterval);
-            }
-        }
 
         // Execute periodic task once to add an entry immediately if possible
         PeriodicTask(null, null);
@@ -125,14 +111,12 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         switch (args[0])
         {
             case "login":
-                username = args[1];
-                password = args[2];
-
-                WriteCredsToFile(username, password);
+                userPrefs.Username = args[1];
+                userPrefs.Password = args[2];
 
                 logger.LogInformation("Tentative d'authentification...");
 
-                if(httpClient.Authenticate(username, password))
+                if(httpClient.Authenticate(userPrefs.Username, userPrefs.Password))
                 {
                     isAuthenticated = true;
                     logger.LogInformation("Authentification réussie.");
@@ -154,8 +138,8 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
             case "logout":
                 // Clear user credentials
-                username = null;
-                password = null;
+                userPrefs.Username = null;
+                userPrefs.Password = null;
                 isAuthenticated = false;
 
                 // Log out of Kimai
@@ -163,9 +147,6 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
                 // Stop timer
                 timer.Stop();
-
-                // Clear user preferences file
-                File.Delete(USER_PREFS_FILE);
 
                 logger.LogInformation("Utilisateur déconnecté.");
                 return "Successfully logged out.";
@@ -194,12 +175,12 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
      */
     private void PeriodicTask(object? sender, System.Timers.ElapsedEventArgs? e)
     {
-        if(username != null && password != null)
+        if(userPrefs.Username != null && userPrefs.Password != null)
         {
             if(!isAuthenticated)
             {
                 // Try to authenticate
-                if(httpClient.Authenticate(username, password))
+                if(httpClient.Authenticate(userPrefs.Username, userPrefs.Password))
                 {
                     isAuthenticated = true;
                     logger.LogInformation("Authentification réussie.");
@@ -241,15 +222,5 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 }
             }
         }
-    }
-
-    private void WriteCredsToFile(string username, string password)
-    {
-        UserPrefs userPrefs = new(username, password);
-        if(!File.Exists(USER_PREFS_FILE))
-        {
-            File.Create(USER_PREFS_FILE).Close();
-        }
-        File.WriteAllText(USER_PREFS_FILE, JsonSerializer.Serialize(userPrefs));
     }
 }
