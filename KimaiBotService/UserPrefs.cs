@@ -10,7 +10,9 @@ public class UserPrefs
     private string? _password;
     private DateTime? _lastEntryAdded;
 
-    private static readonly string FilePath = "userprefs.json";
+    private static readonly string FileName = "userprefs.json";
+    // File path : location of the executable + FileName
+    private static readonly string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
 
     public string? Username
     {
@@ -40,12 +42,12 @@ public class UserPrefs
         }
     }
 
-    // Constructeur par défaut
+    // Default constructor
     public UserPrefs()
     {
     }
 
-    // Constructeur avec paramètres username et password
+    // Constructor with username and password parameters
     public UserPrefs(string username, string password)
     {
         _username = username;
@@ -55,10 +57,16 @@ public class UserPrefs
 
     private void Save()
     {
+        // If file doesn't exist, create it
+        if (!File.Exists(FilePath))
+        {
+            File.Create(FilePath).Close();
+        }
+
         JsonSerializerOptions serializerOptions = new() { WriteIndented = true };
         string jsonString = JsonSerializer.Serialize(this, serializerOptions);
 
-        // Écrire dans le fichier en écrasant le contenu précédent
+        // Write the JSON string to the file
         File.WriteAllText(FilePath, jsonString);
     }
 
