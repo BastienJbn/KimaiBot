@@ -97,6 +97,7 @@ class PipeServer
 
                     // Store command
                     commandList.Add(command);
+                    Monitor.Pulse(commandList); // Notify waiting threads
                 }
             }
 
@@ -114,9 +115,12 @@ class PipeServer
             // Check for cancellation before processing
             token.ThrowIfCancellationRequested();
 
-            if (commandList.Count == 0)
+            // Wait for a command to be available
+            while (commandList.Count == 0)
             {
-                return string.Empty;
+                // Check for cancellation periodically
+                token.ThrowIfCancellationRequested();
+                Monitor.Wait(100); // Adjust the sleep duration as needed
             }
 
             string command = commandList[0];

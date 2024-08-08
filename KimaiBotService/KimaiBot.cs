@@ -121,6 +121,16 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                     isAuthenticated = true;
                     logger.LogInformation("Authentification réussie.");
 
+                    // Add entry
+                    if (httpClient.AddEntryComboRnD())
+                    {
+                        logger.LogInformation("Entrée ajoutée.");
+                    }
+                    else
+                    {
+                        logger.LogError("Échec de l'ajout de l'entrée.");
+                    }
+
                     // Set timer to trigger at configured time (triggerTime)
                     StartTimer();
                     return "Successfully logged in.";
@@ -152,15 +162,28 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 return "Successfully logged out.";
 
             case "addEntry":
-                if(httpClient.AddEntryComboRnD())
+                if(userPrefs.Username == null || userPrefs.Password == null)
                 {
-                    logger.LogInformation("Entrée ajoutée.");
-                    return "Successfully added entry.";
+                    logger.LogWarning("Utilisateur non authentifié.");
+                    return "User not authenticated. Use \"login\" command before.";
+                }
+                if (httpClient.Authenticate(userPrefs.Username, userPrefs.Password))
+                {
+                    if(httpClient.AddEntryComboRnD())
+                    {
+                        logger.LogInformation("Entrée ajoutée.");
+                        return "Successfully added entry.";
+                    }
+                    else
+                    {
+                        logger.LogError("Échec de l'ajout de l'entrée.");
+                        return "Failed to add entry.";
+                    }
                 }
                 else
                 {
-                    logger.LogError("Échec de l'ajout de l'entrée.");
-                    return "Failed to add entry.";
+                    logger.LogError("Échec de l'authentification.");
+                    return "Failed to authenticate.";
                 }
 
             default:
