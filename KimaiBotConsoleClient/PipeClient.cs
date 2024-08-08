@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Pipes;
 using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace KimaiBotCmdLine;
 class PipeClient
@@ -47,16 +50,28 @@ class PipeClient
 
         try
         {
-            // Wait for response
+            // Wait for response with a timeout
             byte[] rxBuffer = new byte[256];
-            int bytesRead = pipeStream.Read(rxBuffer, 0, rxBuffer.Length);
+            var cts = new CancellationTokenSource(5000); // 5 seconds timeout
+            Task<int> readTask = pipeStream.ReadAsync(rxBuffer, 0, rxBuffer.Length, cts.Token);
 
-            ret = Encoding.UTF8.GetString(rxBuffer, 0, bytesRead);
+            if (readTask.Wait(5000)) // Wait for the task to complete or timeout
+            {
+                int bytesRead = readTask.Result;
+                ret = Encoding.UTF8.GetString(rxBuffer, 0, bytesRead);
+            }
+            else
+                ret = "Timeout: No response received within 5 seconds.";
         }
         // Catch IOException that is raised if the pipe is broken or disconnected
         catch (IOException e)
         {
             ret = "!Error: " + e.Message;
+        }
+        // Catch OperationCanceledException if the read operation is canceled
+        catch (OperationCanceledException)
+        {
+            ret = "Timeout: No response received within 5 seconds.";
         }
 
         return ret;

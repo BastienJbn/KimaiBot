@@ -111,15 +111,19 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         switch (args[0])
         {
             case "login":
-                userPrefs.Username = args[1];
-                userPrefs.Password = args[2];
+                string username = args[1];
+                string password = args[2];
 
                 logger.LogInformation("Tentative d'authentification...");
 
-                if(httpClient.Authenticate(userPrefs.Username, userPrefs.Password))
+                if(httpClient.Authenticate(username, password))
                 {
                     isAuthenticated = true;
                     logger.LogInformation("Authentification réussie.");
+
+                    // Set user credentials
+                    userPrefs.Username = username;
+                    userPrefs.Password = password;
 
                     // Add entry
                     if (httpClient.AddEntryComboRnD())

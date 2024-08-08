@@ -96,8 +96,11 @@ class PipeServer
                     Console.WriteLine($"Commande reçue: {command}");
 
                     // Store command
-                    commandList.Add(command);
-                    Monitor.Pulse(commandList); // Notify waiting threads
+                    lock (commandList)
+                    {
+                        commandList.Add(command);
+                        Monitor.Pulse(commandList); // Notify waiting threads
+                    }
                 }
             }
 
@@ -116,16 +119,19 @@ class PipeServer
             token.ThrowIfCancellationRequested();
 
             // Wait for a command to be available
-            while (commandList.Count == 0)
+            lock (commandList)
             {
-                // Check for cancellation periodically
-                token.ThrowIfCancellationRequested();
-                Monitor.Wait(100); // Adjust the sleep duration as needed
-            }
+                while (commandList.Count == 0)
+                {
+                    // Check for cancellation periodically
+                    token.ThrowIfCancellationRequested();
+                    Monitor.Wait(commandList, 100); // Adjust the wait duration as needed
+                }
 
-            string command = commandList[0];
-            commandList.RemoveAt(0);
-            return command;
+                string command = commandList[0];
+                commandList.RemoveAt(0);
+                return command;
+            }
         }, token);
     }
 }
