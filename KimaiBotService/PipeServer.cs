@@ -18,7 +18,8 @@ class PipeServer
     private const string PipeName = "KimaiBotPipe";
     private NamedPipeServerStream? pipeServer;
 
-    private readonly List<string> commandList = [];
+    private readonly Queue<string> commandList = [];
+    private readonly SemaphoreSlim commandListSem = new(0);
 
     public Task Start(CancellationToken token)
     {
@@ -31,6 +32,19 @@ class PipeServer
         {
             pipeServer.Close();
         }
+    }
+
+    public void SendResponse(string response)
+    {
+        if (pipeServer == null)
+        {
+            Console.WriteLine("Error: pipeServer is null.");
+            return;
+        }
+
+        byte[] buffer = Encoding.UTF8.GetBytes(response);
+        pipeServer.Write(buffer, 0, buffer.Length);
+        //pipeServer.Flush();
     }
 
     public async Task SendResponseAsync(string response)
@@ -81,7 +95,7 @@ class PipeServer
                 try
                 {
                     // Read command asynchronously
-                    bytesRead = await pipeServer.ReadAsync(buffer, 0, buffer.Length, token);
+                    bytesRead = await pipeServer.ReadAsync(buffer, token);
                 }
                 // Catch IOException that is raised if the pipe is broken or disconnected
                 catch (IOException e)
@@ -98,40 +112,29 @@ class PipeServer
                     // Store command
                     lock (commandList)
                     {
-                        commandList.Add(command);
-                        Monitor.Pulse(commandList); // Notify waiting threads
+                        commandList.Enqueue(command);
                     }
+                    commandListSem.Release();
                 }
             }
 
             // Close Server after client disconnection
-            pipeServer.Disconnect();
             pipeServer.Close();
         }
     }
 
     public async Task<string> GetRequestAsync(CancellationToken token)
     {
-        // Use Task.Run to simulate asynchronous operation
-        return await Task.Run(() =>
+        // Check for cancellation before processing
+        token.ThrowIfCancellationRequested();
+
+        // Wait for a command to be available
+        await commandListSem.WaitAsync(token); // Wait asynchronously until an item is available
+
+        lock (commandList)
         {
-            // Check for cancellation before processing
-            token.ThrowIfCancellationRequested();
-
-            // Wait for a command to be available
-            lock (commandList)
-            {
-                while (commandList.Count == 0)
-                {
-                    // Check for cancellation periodically
-                    token.ThrowIfCancellationRequested();
-                    Monitor.Wait(commandList, 100); // Adjust the wait duration as needed
-                }
-
-                string command = commandList[0];
-                commandList.RemoveAt(0);
-                return command;
-            }
-        }, token);
+            string command = commandList.Dequeue();
+            return command;
+        }
     }
 }

@@ -36,9 +36,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         // Init timer
         timer.Elapsed += PeriodicTask;
         timer.AutoReset = true;
-
-        // Execute periodic task once to add an entry immediately if possible
-        PeriodicTask(null, null);
+        timer.Enabled = true;
 
         // Start command handler and server
         await Task.WhenAll(CommandHandler(token), server.Start(token));
@@ -60,7 +58,8 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
             }
 
             string response = HandleCommand(request);
-            await server.SendResponseAsync(response);
+            //await server.SendResponseAsync(response);
+            server.SendResponse(response);
         }
     }
 
@@ -68,7 +67,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
      * Set the time at which the timer should trigger.
      * @param time The time at which the timer should trigger.
      */
-    private void StartTimer() {
+    private void SetUserInterval() {
         if (triggerTime == null)
         {
             logger.LogWarning("Heure de déclenchement non définie. Tous les jours à 10h par défaut.");
@@ -84,12 +83,6 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
         // Start timer
         timer.Interval = timeUntilTrigger.TotalMilliseconds;
-        timer.Start();
-    }
-
-    private void StartTimerByInterval(TimeSpan interval)
-    {
-        timer.Interval = interval.TotalMilliseconds;
         timer.Start();
     }
 
@@ -136,7 +129,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                     }
 
                     // Set timer to trigger at configured time (triggerTime)
-                    StartTimer();
+                    SetUserInterval();
                     return "Successfully logged in.";
                 }
                 else
@@ -144,8 +137,8 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                     isAuthenticated = false;
                     logger.LogError("Authentification échouée.");
 
-                    // Set timer to trigger every minute
-                    StartTimerByInterval(new TimeSpan(0, 1, 0));
+                    // Set timer to trigger every 10secs
+                    timer.Interval = 10000;
 
                     return "Failed to log in.";
                 }
@@ -190,6 +183,11 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                     return "Failed to authenticate.";
                 }
 
+            case "interval":
+                int val = int.Parse(args[1]);
+                timer.Interval = val;
+                return $"interval set to {val}";
+
             default:
                 logger.LogWarning("Commande reçue invalide.");
                 return "Invalid command.";
@@ -212,22 +210,28 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                     isAuthenticated = true;
                     logger.LogInformation("Authentification réussie.");
 
-                    // Add entry
-                    if(httpClient.AddEntryComboRnD())
+                    // Add entry, if not already done today
+                    if (userPrefs.LastEntryAdded != null && userPrefs.LastEntryAdded.Value.Date != DateTime.Now.Date)
                     {
-                        logger.LogInformation("Entrée ajoutée.");
-                    }
-                    else
-                    {
-                        logger.LogError("Échec de l'ajout de l'entrée.");
+                        if(httpClient.AddEntryComboRnD())
+                        {
+                            logger.LogInformation("Entrée ajoutée.");
+                            userPrefs.LastEntryAdded = DateTime.Now;
+                        }
+                        else
+                        {
+                            logger.LogError("Échec de l'ajout de l'entrée.");
+                        }
                     }
 
                     // Set timer to trigger at triggerTime
-                    StartTimer();
+                    SetUserInterval();
                 }
                 else
                 {
                     logger.LogError("Authentification échouée.");
+                    // Set timer to trigger every 10secs
+                    timer.Interval = 10000;
                 }
             }
             else
@@ -236,6 +240,8 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 if(httpClient.AddEntryComboRnD())
                 {
                     logger.LogInformation("Entrée ajoutée.");
+                    // Set timer to trigger at triggerTime
+                    SetUserInterval();
                 }
                 else
                 {
@@ -244,10 +250,14 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                     // HttpClient failed to add entry, try to re-authenticate
                     isAuthenticated = false;
 
-                    // Set timer to trigger every minute
-                    StartTimerByInterval(new TimeSpan(0, 1, 0));
+                    // Set timer to trigger every 10secs
+                    timer.Interval = 10000;
                 }
             }
+        }
+        else
+        {
+            logger.LogInformation("Periodic task");
         }
     }
 }

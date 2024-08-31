@@ -21,3 +21,13 @@ public class LogoutOptions
 public class AddEntryOptions
 {
 }
+
+// Debug commands
+#if DEBUG
+[Verb("interval", HelpText = "set timer interval")]
+public class IntervalOptions
+{
+    [Value(1, HelpText = "time in ms.", Required = true)]
+    public required int val { get; set; }
+}
+#endif

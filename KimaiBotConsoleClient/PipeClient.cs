@@ -51,7 +51,7 @@ class PipeClient
         try
         {
             // Wait for response with a timeout
-            byte[] rxBuffer = new byte[256];
+            byte[] rxBuffer = new byte[8 * 1000];  // 1000 time 64bits
             var cts = new CancellationTokenSource(5000); // 5 seconds timeout
             Task<int> readTask = pipeStream.ReadAsync(rxBuffer, 0, rxBuffer.Length, cts.Token);
 

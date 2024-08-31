@@ -12,12 +12,25 @@ class Parser(PipeClient pipeClient)
     {
         var args = command.Split();
 
-        string result = CommandLine.Parser.Default.ParseArguments<LoginOptions, LogoutOptions, AddEntryOptions>(args)
+        pipeClient.Connect();
+
+        // TODO: Make the process of new Options automatic, without having to create new functions each time.
+        string result = CommandLine.Parser.Default.ParseArguments<
+              LoginOptions
+            , LogoutOptions
+            , AddEntryOptions
+#if DEBUG
+            , IntervalOptions
+#endif   
+            >(args)
             .MapResult(
-                (LoginOptions opts) => ExecuteWithConnection(() => RunLogin(opts)),
-                (LogoutOptions opts) => ExecuteWithConnection(() => RunLogout(opts)),
-                (AddEntryOptions opts) => ExecuteWithConnection(() => RunAddEntry(opts)),
-                errs => HandleParseError(errs)
+                (LoginOptions opts) => RunLogin(opts)
+                , (LogoutOptions opts) => RunLogout(opts)
+                , (AddEntryOptions opts) => RunAddEntry(opts)
+#if DEBUG
+                , (IntervalOptions opts) => RunInterval(opts)
+#endif
+                , errs => HandleParseError(errs)
             );
 
         pipeClient.Disconnect();
@@ -49,6 +62,13 @@ class Parser(PipeClient pipeClient)
     {
         return pipeClient.SendReceive("addEntry");
     }
+
+#if DEBUG
+    private string RunInterval(IntervalOptions opts)
+    {
+        return pipeClient.SendReceive($"interval {opts.val}");
+    }
+#endif
 
     private string HandleParseError(IEnumerable<Error> errs)
     {
