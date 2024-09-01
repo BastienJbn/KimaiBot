@@ -16,8 +16,10 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
     private readonly PipeServer server = new();
     private readonly ILogger<KimaiBot> logger = logger;
 
-    DateTime? triggerTime = null;
-    TimeSpan timerInterval = new(0, 1, 0); // 1 minute by default
+    private DateTime? triggerTime = null;
+    private TimeSpan timerInterval = new(0, 1, 0); // 1 minute by default
+    private int nbTry = 0;
+    private const int MAX_TRIES = 5;
 
     private bool isAuthenticated = false;
     private UserPrefs userPrefs = new();
@@ -36,7 +38,6 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         // Init timer
         timer.Elapsed += PeriodicTask;
         timer.AutoReset = true;
-        timer.Enabled = true;
 
         // Start command handler and server
         await Task.WhenAll(CommandHandler(token), server.Start(token));
@@ -104,19 +105,17 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         switch (args[0])
         {
             case "login":
-                string username = args[1];
-                string password = args[2];
+                // Save credential
+                userPrefs.Username = args[1];
+                userPrefs.Password = args[2];
 
                 logger.LogInformation("Tentative d'authentification...");
 
-                if(httpClient.Authenticate(username, password))
+                if(httpClient.Authenticate(userPrefs.Username, userPrefs.Password))
                 {
                     isAuthenticated = true;
                     logger.LogInformation("Authentification réussie.");
 
-                    // Set user credentials
-                    userPrefs.Username = username;
-                    userPrefs.Password = password;
 
                     // Add entry
                     if (httpClient.AddEntryComboRnD())
@@ -139,6 +138,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
                     // Set timer to trigger every 10secs
                     timer.Interval = 10000;
+                    timer.Start();
 
                     return "Failed to log in.";
                 }
@@ -153,7 +153,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 httpClient.Logout();
 
                 // Stop timer
-                timer.Stop();
+                timer.Enabled = false;
 
                 logger.LogInformation("Utilisateur déconnecté.");
                 return "Successfully logged out.";
@@ -186,6 +186,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
             case "interval":
                 int val = int.Parse(args[1]);
                 timer.Interval = val;
+                timer.Enabled = true;
                 return $"interval set to {val}";
 
             default:
@@ -200,64 +201,74 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
      */
     private void PeriodicTask(object? sender, System.Timers.ElapsedEventArgs? e)
     {
-        if(userPrefs.Username != null && userPrefs.Password != null)
+        // Check that user has provided credentials
+        if (userPrefs.Username == null || userPrefs.Password == null)
         {
-            if(!isAuthenticated)
+            // Stop timer
+            timer.Enabled = false;
+            return;
+        }
+
+        if (!isAuthenticated)
+        {
+            // Try to authenticate
+            if(httpClient.Authenticate(userPrefs.Username, userPrefs.Password))
             {
-                // Try to authenticate
-                if(httpClient.Authenticate(userPrefs.Username, userPrefs.Password))
-                {
-                    isAuthenticated = true;
-                    logger.LogInformation("Authentification réussie.");
+                isAuthenticated = true;
+                logger.LogInformation("Authentification réussie.");
 
-                    // Add entry, if not already done today
-                    if (userPrefs.LastEntryAdded != null && userPrefs.LastEntryAdded.Value.Date != DateTime.Now.Date)
-                    {
-                        if(httpClient.AddEntryComboRnD())
-                        {
-                            logger.LogInformation("Entrée ajoutée.");
-                            userPrefs.LastEntryAdded = DateTime.Now;
-                        }
-                        else
-                        {
-                            logger.LogError("Échec de l'ajout de l'entrée.");
-                        }
-                    }
-
-                    // Set timer to trigger at triggerTime
-                    SetUserInterval();
-                }
-                else
-                {
-                    logger.LogError("Authentification échouée.");
-                    // Set timer to trigger every 10secs
-                    timer.Interval = 10000;
-                }
+                // Set timer to trigger at triggerTime
+                SetUserInterval();
             }
             else
             {
-                // Add entry
-                if(httpClient.AddEntryComboRnD())
+                logger.LogError("Authentification échouée.");
+
+                if (nbTry < MAX_TRIES)
                 {
-                    logger.LogInformation("Entrée ajoutée.");
-                    // Set timer to trigger at triggerTime
-                    SetUserInterval();
+                    if (nbTry == 0)
+                    {
+                        timer.Interval = 10000;  // Set timer to trigger every 
+                        timer.Enabled = true;
+                    }
+                    nbTry++;
                 }
                 else
                 {
-                    logger.LogError("Échec de l'ajout de l'entrée.");
+                    // Reset try counter
+                    nbTry = 0;
 
-                    // HttpClient failed to add entry, try to re-authenticate
-                    isAuthenticated = false;
+                    // Stop timer
+                    timer.Enabled = false;
 
-                    // Set timer to trigger every 10secs
-                    timer.Interval = 10000;
+                    // TODO: windows notif
                 }
+                return;
+            }
+        }
+
+        // Last entry not today ?
+        if (userPrefs.LastEntryAdded == null || (userPrefs.LastEntryAdded.Value.Date != DateTime.Now.Date))
+        {
+            if (httpClient.AddEntryComboRnD())
+            {
+                logger.LogInformation("Entrée ajoutée.");
+                userPrefs.LastEntryAdded = DateTime.Now;
+                SetUserInterval();
+            }
+            else
+            {
+                // HttpClient failed to add entry, try to re-authenticate
+                isAuthenticated = false;
+
+                // Set timer to 10secs
+                timer.Interval = 10000;
+                timer.Enabled = true;
             }
         }
         else
         {
-            logger.LogInformation("Periodic task");
+            SetUserInterval();
         }
     }
 }
