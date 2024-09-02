@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System.IO;
 
 namespace KimaiBotService;
 
@@ -37,7 +35,8 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
         // Init timer
         timer.Elapsed += PeriodicTask;
-        timer.AutoReset = true;
+        timer.AutoReset = false;
+        timer.Start();
 
         // Start command handler and server
         await Task.WhenAll(CommandHandler(token), server.Start(token));
@@ -59,32 +58,33 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
             }
 
             string response = HandleCommand(request);
-            //await server.SendResponseAsync(response);
             server.SendResponse(response);
         }
     }
 
     /**
-     * Set the time at which the timer should trigger.
-     * @param time The time at which the timer should trigger.
+     * Start timer with user pref interval
      */
-    private void SetUserInterval() {
-        if (triggerTime == null)
+    private void StartTimer()
+    {
+        if (userPrefs.TriggerTime == null)
         {
-            logger.LogWarning("Heure de déclenchement non définie. Tous les jours à 10h par défaut.");
-            triggerTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 10, 0, 0);
+            logger.LogWarning("Heure de déclenchement non définie. 10h par défaut.");
+            userPrefs.TriggerTime = new TimeSpan(10, 0, 0);
         }
 
         // Calculate time until trigger
-        TimeSpan timeUntilTrigger = triggerTime.Value - DateTime.Now;
+        TimeSpan timeUntilTrigger = userPrefs.TriggerTime.Value - DateTime.Now.TimeOfDay;
 
-        // If time is negative, add a day
-        if(timeUntilTrigger.TotalMilliseconds < 0)
+        // If time is negative or entry was already added today, add a day
+        if (timeUntilTrigger.TotalMilliseconds < 0 || userPrefs.LastEntryAdded?.Day == DateTime.Now.Day)
             timeUntilTrigger = timeUntilTrigger.Add(new TimeSpan(1, 0, 0, 0));
 
-        // Start timer
+        // Start timer if not already started
         timer.Interval = timeUntilTrigger.TotalMilliseconds;
-        timer.Start();
+        
+        if (!timer.Enabled)
+            timer.Start();
     }
 
     /**
@@ -116,19 +116,27 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                     isAuthenticated = true;
                     logger.LogInformation("Authentification réussie.");
 
-
-                    // Add entry
-                    if (httpClient.AddEntryComboRnD())
+                    // Last entry not today ?
+                    if (userPrefs.LastEntryAdded == null || (userPrefs.LastEntryAdded.Value.Date != DateTime.Now.Date))
                     {
-                        logger.LogInformation("Entrée ajoutée.");
-                    }
-                    else
-                    {
-                        logger.LogError("Échec de l'ajout de l'entrée.");
+                        // Add entry
+                        if (httpClient.AddEntryComboRnD())
+                        {
+                            userPrefs.LastEntryAdded = DateTime.Now;
+                            // Set timer to trigger at configured time (userPrefs.TriggerTime)
+                            StartTimer();
+                            logger.LogInformation("Entrée ajoutée.");
+                        }
+                        else
+                        {
+                            logger.LogError("Échec de l'ajout de l'entrée.");
+
+                            // Set timer trigger at 10s
+                            timer.Interval = 10000;
+                            timer.Start();
+                        }
                     }
 
-                    // Set timer to trigger at configured time (triggerTime)
-                    SetUserInterval();
                     return "Successfully logged in.";
                 }
                 else
@@ -168,6 +176,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 {
                     if(httpClient.AddEntryComboRnD())
                     {
+                        userPrefs.LastEntryAdded = DateTime.Now;
                         logger.LogInformation("Entrée ajoutée.");
                         return "Successfully added entry.";
                     }
@@ -218,7 +227,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 logger.LogInformation("Authentification réussie.");
 
                 // Set timer to trigger at triggerTime
-                SetUserInterval();
+                StartTimer();
             }
             else
             {
@@ -254,7 +263,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
             {
                 logger.LogInformation("Entrée ajoutée.");
                 userPrefs.LastEntryAdded = DateTime.Now;
-                SetUserInterval();
+                StartTimer();
             }
             else
             {
@@ -268,7 +277,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         }
         else
         {
-            SetUserInterval();
+            StartTimer();
         }
     }
 }

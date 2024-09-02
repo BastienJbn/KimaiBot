@@ -6,13 +6,14 @@ namespace KimaiBotService;
 
 public class UserPrefs
 {
-    private string? _username;
-    private string? _password;
-    private DateTime? _lastEntryAdded;
-
     private static readonly string FileName = "userprefs.json";
     // File path : location of the executable + FileName
     public static readonly string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
+
+    private string? _username;
+    private string? _password;
+    private DateTime? _lastEntryAdded;
+    private TimeSpan? _triggerTime;
 
     public string? Username
     {
@@ -38,6 +39,16 @@ public class UserPrefs
         set
         {
             _lastEntryAdded = value;
+            Save();
+        }
+    }
+
+    public TimeSpan? TriggerTime
+    {
+        get => _triggerTime;
+        set
+        {
+            _triggerTime = value;
             Save();
         }
     }

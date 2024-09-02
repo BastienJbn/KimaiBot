@@ -11,6 +11,7 @@ Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "KimaiBotInstaller", "KimaiB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{D42790A8-46D9-404C-910E-41A09C23700D}"
 	ProjectSection(SolutionItems) = preProject
+		KimaiBot_icon.ico = KimaiBot_icon.ico
 		Readme.md = Readme.md
 	EndProjectSection
 EndProject

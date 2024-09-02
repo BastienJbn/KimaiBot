@@ -15,7 +15,7 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_60F51CA544F347A7809C034F784FEEE1"
+        "MsmKey" = "8:_3356AD42A07C4423A9A375D57C223168"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -137,7 +137,7 @@
             "Object" = "8:_F6E2D71A00134EC3A2D727AAF1080EC3"
             "FileType" = "3:2"
             "InstallAction" = "3:1"
-            "Arguments" = "8:"
+            "Arguments" = "8:/Install"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
             "Identifier" = "8:_53ECF5C4_DB58_4A78_A5B6_DD8B43EC2B6B"
@@ -151,7 +151,7 @@
             "Object" = "8:_F6E2D71A00134EC3A2D727AAF1080EC3"
             "FileType" = "3:2"
             "InstallAction" = "3:4"
-            "Arguments" = "8:"
+            "Arguments" = "8:/Uninstall"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
             "Identifier" = "8:_30AFD7AA_A3C0_44B9_BF08_842A7C94ECDC"
@@ -183,9 +183,9 @@
         }
         "File"
         {
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_60F51CA544F347A7809C034F784FEEE1"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3356AD42A07C4423A9A375D57C223168"
             {
-            "SourcePath" = "8:KimaiBot_icon.ico"
+            "SourcePath" = "8:..\\KimaiBot_icon.ico"
             "TargetName" = "8:KimaiBot_icon.ico"
             "Tag" = "8:"
             "Folder" = "8:_A58F735B09DB42D49002822257EEE665"
@@ -260,7 +260,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:KimaiBot"
         "ProductCode" = "8:{9EDFD1A4-5866-4DF5-8893-2B39B193796C}"
-        "PackageCode" = "8:{859E0187-8B79-4907-9AB1-70B75DD90088}"
+        "PackageCode" = "8:{2FE188E6-33B2-4509-98BB-BABED011B03B}"
         "UpgradeCode" = "8:{7D47E919-5ADF-4458-9AA5-A56FD2560F4B}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -277,7 +277,7 @@
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:Installer for KimaiBot Windows Service."
         "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:_60F51CA544F347A7809C034F784FEEE1"
+        "ARPPRODUCTICON" = "8:_3356AD42A07C4423A9A375D57C223168"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"

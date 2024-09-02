@@ -1,7 +1,7 @@
 ﻿using KimaiBotCmdLine;
 using System;
-using System.IO;
-using System.Reflection;
+
+const string pathKey = "PATH";
 
 // Main function when debugging
 #if DEBUG
@@ -36,44 +36,25 @@ while (true)
 
 if (args.Length!=0 && args[0] is "/Install")
 {
-    // Add the path of the executable to the system environment variables
-    string directory = AppContext.BaseDirectory;
-    //Remove the last backslash
-    directory = directory.Remove(directory.Length - 1);
+    string directory = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
+    string? currentPath = Environment.GetEnvironmentVariable(pathKey, EnvironmentVariableTarget.Machine);
 
-    // Check if the executable exists
-    string executablePath = Path.Combine(directory, $"{Assembly.GetExecutingAssembly().GetName().Name}.exe");
-    if (!File.Exists(executablePath))
+    if (currentPath != null && !currentPath.Contains(directory))
     {
-        Console.WriteLine("Executable not found");
-        Environment.Exit(1);
+        Environment.SetEnvironmentVariable(pathKey, currentPath + ";" + directory, EnvironmentVariableTarget.Machine);
     }
-
-    // Add the path of the executable to the system environment variables
-    Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + directory);
 
     Environment.Exit(0);
 }
 else if (args.Length != 0 && args[0] is "/Uninstall")
 {
-    // Remove the directory of the executable from the system environment variables
-    string directory = AppContext.BaseDirectory;
-    //Remove the last backslash
-    directory = directory.Remove(directory.Length - 1);
+    string directory = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
+    string? currentPath = Environment.GetEnvironmentVariable(pathKey, EnvironmentVariableTarget.Machine);
 
-    // Check if the executable exists
-    string executablePath = Path.Combine(directory, $"{Assembly.GetExecutingAssembly().GetName().Name}.exe");
-    if (!File.Exists(executablePath)) {
-        Console.WriteLine("Executable not found");
-        Environment.Exit(1);
-    }
-
-    // Remove the path of the executable from the system environment variables
-    string? path = Environment.GetEnvironmentVariable("PATH");
-    if (path != null)
+    if (currentPath != null && currentPath.Contains(directory))
     {
-        path = path.Replace(directory, "");
-        Environment.SetEnvironmentVariable("PATH", path);
+        string newPath = currentPath.Replace(directory, "").Replace(";;", ";");
+        Environment.SetEnvironmentVariable(pathKey, newPath, EnvironmentVariableTarget.Machine);
     }
 
     Environment.Exit(0);

@@ -8,10 +8,15 @@
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <PublishSingleFile>true</PublishSingleFile>
         <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+        <ApplicationIcon>KimaiBot_icon.ico</ApplicationIcon>
 	</PropertyGroup>
 
     <ItemGroup>
       <Content Remove="userprefs.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="KimaiBot_icon.ico" />
     </ItemGroup>
 
 	<ItemGroup>

@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "KimaiBot CmdLine Uninstall": {
+      "commandName": "Project",
+      "commandLineArgs": "/Uninstall"
+    },
+    "KimaiBot CmdLine Install": {
+      "commandName": "Project",
+      "commandLineArgs": "/Install"
+    },
+    "Help": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    }
+  }
+}
