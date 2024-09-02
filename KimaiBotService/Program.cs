@@ -12,6 +12,7 @@ using CliWrap;
 
 const string ServiceName = "KimaiBot";
 
+// Installation commands
 if (args is { Length: 1 })
 {
     try
@@ -50,16 +51,30 @@ if (args is { Length: 1 })
     return;
 }
 
+// Configure the service to run as a Windows service
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddWindowsService(options =>
 {
     options.ServiceName = ServiceName;
 });
 
+// Register EventLog settings
 LoggerProviderOptions.RegisterProviderOptions<
     EventLogSettings, EventLogLoggerProvider>(builder.Services);
 
-builder.Services.AddLogging(configure => configure.AddConsole());
+// Configure logging
+builder.Services.AddLogging(configure =>
+{
+    configure.AddConsole();
+    configure.AddEventLog(options =>
+    {
+        options.SourceName = ServiceName;
+    });
+});
+
+// Add KimaiBot as a hosted service
 builder.Services.AddHostedService<WindowsBackgroundService>();
+
+// Build and run the host
 IHost host = builder.Build();
 host.Run();

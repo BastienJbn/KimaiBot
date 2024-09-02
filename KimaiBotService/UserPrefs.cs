@@ -12,7 +12,7 @@ public class UserPrefs
 
     private static readonly string FileName = "userprefs.json";
     // File path : location of the executable + FileName
-    private static readonly string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
+    public static readonly string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
 
     public string? Username
     {

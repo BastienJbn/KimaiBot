@@ -14,7 +14,6 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
     private readonly System.Timers.Timer timer = new();
     private readonly KimaiHttpClient httpClient = new();
     private readonly PipeServer server = new();
-    private readonly ILogger<KimaiBot> logger = logger;
 
     private DateTime? triggerTime = null;
     private TimeSpan timerInterval = new(0, 1, 0); // 1 minute by default
@@ -34,6 +33,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
         // Load user preferences
         userPrefs = UserPrefs.Load();
+        logger.LogInformation("User file location: {UserPrefs.FilePath}", UserPrefs.FilePath);
 
         // Init timer
         timer.Elapsed += PeriodicTask;
