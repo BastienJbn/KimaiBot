@@ -14,8 +14,6 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
     private readonly KimaiHttpClient httpClient = new();
     private readonly PipeServer server = new();
 
-    private DateTime? triggerTime = null;
-    private TimeSpan timerInterval = new(0, 1, 0); // 1 minute by default
     private int nbTry = 0;
     private const int MAX_TRIES = 5;
 

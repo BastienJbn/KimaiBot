@@ -6,8 +6,6 @@ using System.Collections.Generic;
 
 class Parser(PipeClient pipeClient)
 {
-    private PipeClient pipeClient = pipeClient;
-
     public string HandleCommand(string command)
     {
         var args = command.Split();

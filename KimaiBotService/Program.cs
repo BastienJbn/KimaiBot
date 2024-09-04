@@ -7,9 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
-
 using CliWrap;
-using Microsoft.Extensions.Options;
 
 const string ServiceName = "KimaiBot";
 
