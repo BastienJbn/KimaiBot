@@ -22,6 +22,19 @@ public class AddEntryOptions
 {
 }
 
+[Verb("configure", HelpText = "Configure entry parameters.")]
+public class ConfigureOptions
+{
+    [Value(1, HelpText = "Start time of the entry. Format is 00:00 (hour:min).", Required = true)]
+    public required string StartTime { get; set; }
+
+    [Value(2, HelpText = "Duration of the entry. Format is 00:00 (hour:min)", Required = true)]
+    public required string Duration { get; set; }
+
+    [Value(3, HelpText = "The time at which the entry should be added by the bot. Format is 00:00 (hour:min)", Required = true)]
+    public required string AddTime { get; set; }
+}
+
 // Debug commands
 #if DEBUG
 [Verb("interval", HelpText = "set timer interval")]

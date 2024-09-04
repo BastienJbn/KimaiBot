@@ -13,8 +13,11 @@ public class UserPrefs
     private string? _username;
     private string? _password;
     private DateTime? _lastEntryAdded;
-    private TimeSpan? _triggerTime;
     private int? _userId;
+
+    private TimeSpan? _addTime;
+    private TimeSpan? _startTime;
+    private TimeSpan? _duration;
 
     public string? Username
     {
@@ -44,22 +47,41 @@ public class UserPrefs
         }
     }
 
-    public TimeSpan? TriggerTime
-    {
-        get => _triggerTime;
-        set
-        {
-            _triggerTime = value;
-            Save();
-        }
-    }
-
     public int? UserId
     {
         get => _userId;
         set
         {
             _userId = value;
+            Save();
+        }
+    }
+    public TimeSpan? AddTime
+    {
+        get => _addTime;
+        set
+        {
+            _addTime = value;
+            Save();
+        }
+    }
+
+    public TimeSpan? StartTime
+    {
+        get => _startTime;
+        set
+        {
+            _startTime = value;
+            Save();
+        }
+    }
+
+    public TimeSpan? Duration
+    {
+        get => _duration;
+        set
+        {
+            _duration = value;
             Save();
         }
     }

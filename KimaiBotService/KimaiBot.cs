@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using Microsoft.Extensions.Logging;
+using Windows.System;
 
 namespace KimaiBotService;
 
@@ -27,7 +28,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
      */
     public async Task Start(CancellationToken token)
     {
-        if(!logger.IsEnabled(LogLevel.Information))
+        if (!logger.IsEnabled(LogLevel.Information))
         {
             logger.LogWarning("LogLevel Information is not enabled!");
         }
@@ -36,7 +37,6 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
         // Load user preferences
         userPrefs = UserPrefs.Load();
-        logger.LogWarning("Chemin du fichier de préférences utilisateur: {UserPrefs.FilePath}", UserPrefs.FilePath);
 
         // Init timer
         timer.Elapsed += PeriodicTask;
@@ -72,14 +72,14 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
      */
     private void StartTimer()
     {
-        if (userPrefs.TriggerTime == null)
+        if (userPrefs.AddTime == null)
         {
-            userPrefs.TriggerTime = new TimeSpan(10, 0, 0);
-            logger.LogWarning("Heure de déclenchement non définie. {heure} par défaut.", userPrefs.TriggerTime.ToString());
+            userPrefs.AddTime = new TimeSpan(0, 1, 0);
+            logger.LogWarning("Heure de déclenchement non définie. {heure} par défaut.", userPrefs.AddTime.ToString());
         }
 
         // Calculate time until trigger
-        TimeSpan timeUntilTrigger = userPrefs.TriggerTime.Value - DateTime.Now.TimeOfDay;
+        TimeSpan timeUntilTrigger = userPrefs.AddTime.Value - DateTime.Now.TimeOfDay;
 
         // If time is negative or entry was already added today, add a day
         if (timeUntilTrigger.TotalMilliseconds < 0 || userPrefs.LastEntryAdded?.Day == DateTime.Now.Day)
@@ -87,7 +87,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
         // Start timer if not already started
         timer.Interval = timeUntilTrigger.TotalMilliseconds;
-        
+
         if (!timer.Enabled)
             timer.Start();
     }
@@ -124,26 +124,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                     isAuthenticated = true;
                     logger.LogWarning("Authentification réussie.");
 
-                    // Last entry not today ?
-                    if (userPrefs.LastEntryAdded == null || (userPrefs.LastEntryAdded.Value.Date != DateTime.Now.Date))
-                    {
-                        // Add entry
-                        if (httpClient.AddEntryComboRnD(userId))
-                        {
-                            userPrefs.LastEntryAdded = DateTime.Now;
-                            // Set timer to trigger at configured time (userPrefs.TriggerTime)
-                            StartTimer();
-                            logger.LogWarning("Entrée ajoutée.");
-                        }
-                        else
-                        {
-                            logger.LogError("Échec de l'ajout de l'entrée.");
-
-                            // Set timer trigger at 10s
-                            timer.Interval = 10000;
-                            timer.Start();
-                        }
-                    }
+                    SafeAddEntry();
 
                     return "Successfully logged in.";
                 }
@@ -176,36 +157,44 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 return "Successfully logged out.";
 
             case "addEntry":
-                if((userPrefs.Username == null || userPrefs.Password == null) || !isAuthenticated || userPrefs.UserId == null)
+                if ((userPrefs.Username == null || userPrefs.Password == null) || !isAuthenticated || userPrefs.UserId == null)
                 {
                     logger.LogWarning("Utilisateur non authentifié.");
                     return "User not authenticated. Use \"login\" command before.";
                 }
 
-                if(httpClient.AddEntryComboRnD(userPrefs.UserId.Value))
-                {
-                    userPrefs.LastEntryAdded = DateTime.Now;
-                    logger.LogWarning("Entrée ajoutée.");
+                if (AddEntry())
                     return "Successfully added entry.";
-                }
                 else
-                {
-                    // HttpClient failed to add entry, try to re-authenticate
-                    isAuthenticated = false;
-
-                    // Set timer to 10secs
-                    timer.Interval = 10000;
-                    timer.Enabled = true;
-
-                    logger.LogError("Ajout d'entrée échouée. Essai de ré-Authentification.");
                     return "Failed to add entry.";
-                }
 
+            case "configure":
+                TimeSpan _startTime, _duration, _addTime;
+
+                if (!TimeSpan.TryParse(args[1], out _startTime))
+                    return "Wrong time format for [StartTime].";
+
+                if (!TimeSpan.TryParse(args[2], out _duration))
+                    return "Wrong time format for [Duration].";
+
+                if (!TimeSpan.TryParse(args[3], out _addTime))
+                    return "Wrong time format for [AddTime].";
+
+                userPrefs.StartTime = _startTime;
+                userPrefs.Duration = _duration;
+                userPrefs.AddTime = _addTime;
+
+                StartTimer();
+
+                return "Configuration saved.";
+
+#if DEBUG
             case "interval":
                 int val = int.Parse(args[1]);
                 timer.Interval = val;
                 timer.Enabled = true;
                 return $"interval set to {val}";
+#endif
 
             default:
                 logger.LogWarning("Commande reçue invalide.");
@@ -250,7 +239,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                     timer.Enabled = true;
 
                     nbTry++;
-                    
+
                     logger.LogError("Authentification échouée. Essai numéro {nbTry}", nbTry);
                 }
                 else
@@ -271,31 +260,64 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
         // Last entry not today ? UserId known ?
         if ((userPrefs.LastEntryAdded == null || (userPrefs.LastEntryAdded.Value.Date != DateTime.Now.Date)) && userPrefs.UserId != null)
-        {                
-            if (httpClient.AddEntryComboRnD(userPrefs.UserId.Value))
-            {
-                logger.LogWarning("Entrée ajoutée. Démarrage du timer pour un déclanchement à {heure}.", userPrefs.TriggerTime.ToString());
-                userPrefs.LastEntryAdded = DateTime.Now;
-                StartTimer();
-            }
-            else
-            {
-                // HttpClient failed to add entry, try to re-authenticate
-                isAuthenticated = false;
+        {
 
-                // Set timer to 10secs
-                timer.Interval = 10000;
-                timer.Enabled = true;
-
-                logger.LogError("Ajout d'entrée échouée. Essai de ré-Authentification.");
-            }
         }
         else
         {
-            logger.LogWarning("Entrée déjà ajoutée aujourd'hui à {heure}. Démarrage du timer pour un déclanchement à {heure}.", 
-                userPrefs.LastEntryAdded.ToString(), userPrefs.TriggerTime.ToString());
+            logger.LogWarning("Entrée déjà ajoutée aujourd'hui à {heure}. Démarrage du timer pour un déclanchement à {heure}.",
+                userPrefs.LastEntryAdded.ToString(), userPrefs.AddTime.ToString());
 
             StartTimer();
+        }
+    }
+
+    private bool SafeAddEntry()
+    {
+        // Last entry was today ?
+        if ((userPrefs.LastEntryAdded != null && userPrefs.LastEntryAdded.Value.Date == DateTime.Now.Date))
+            return true;  // Do nothing and return
+
+        // Add entry
+        return AddEntry();
+    }
+
+    private bool AddEntry()
+    {
+        if (userPrefs.StartTime == null)
+        {
+            userPrefs.StartTime = new(0, 0, 0);
+            logger.LogWarning("StartTime non définie. {heure} par défaut.", userPrefs.StartTime.ToString());
+        }
+
+        if (userPrefs.Duration == null)
+        {
+            userPrefs.Duration = new(7, 24, 0);
+            logger.LogWarning("Durée non définie. {heure} par défaut.", userPrefs.Duration.ToString());
+        }
+
+        // UserId not received, can't add entry
+        if (userPrefs.UserId == null)
+            return false;
+
+        if (httpClient.AddEntryComboRnD(userPrefs.UserId.Value, userPrefs.StartTime.Value, userPrefs.Duration.Value))
+        {
+            logger.LogWarning("Entrée ajoutée. Démarrage du timer pour un déclanchement à {heure}.", userPrefs.AddTime.ToString());
+            userPrefs.LastEntryAdded = DateTime.Now;
+            StartTimer();
+            return true;
+        }
+        else
+        {
+            // HttpClient failed to add entry, try to re-authenticate
+            isAuthenticated = false;
+
+            // Set timer to 10secs
+            timer.Interval = 10000;
+            timer.Enabled = true;
+
+            logger.LogError("Ajout d'entrée échouée. Essai de ré-Authentification.");
+            return false;
         }
     }
 }

@@ -19,6 +19,7 @@ class Parser(PipeClient pipeClient)
               LoginOptions
             , LogoutOptions
             , AddEntryOptions
+            , ConfigureOptions
 #if DEBUG
             , IntervalOptions
 #endif   
@@ -27,6 +28,7 @@ class Parser(PipeClient pipeClient)
                 (LoginOptions opts) => RunLogin(opts)
                 , (LogoutOptions opts) => RunLogout(opts)
                 , (AddEntryOptions opts) => RunAddEntry(opts)
+                , (ConfigureOptions opts) => RunConfigure(opts) 
 #if DEBUG
                 , (IntervalOptions opts) => RunInterval(opts)
 #endif
@@ -36,16 +38,6 @@ class Parser(PipeClient pipeClient)
         pipeClient.Disconnect();
 
         return result;
-    }
-
-    private string ExecuteWithConnection(Func<string> runFunction)
-    {
-        if (!pipeClient.Connect())
-        {
-            return "Failed to connect to the pipe server!";
-        }
-
-        return runFunction();
     }
 
     private string RunLogin(LoginOptions opts)
@@ -61,6 +53,11 @@ class Parser(PipeClient pipeClient)
     private string RunAddEntry(AddEntryOptions opts)
     {
         return pipeClient.SendReceive("addEntry");
+    }
+
+    private string RunConfigure(ConfigureOptions opts)
+    {
+        return pipeClient.SendReceive($"configure {opts.StartTime} {opts.Duration} {opts.AddTime}");
     }
 
 #if DEBUG

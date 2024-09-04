@@ -84,8 +84,9 @@ class KimaiHttpClient
         handler.CookieContainer.SetCookies(new Uri(loginHttpAddress), "");
     }
 
-    public bool AddEntryComboRnD(int userID)
+    public bool AddEntryComboRnD(int userID, TimeSpan startTime, TimeSpan duration)
     {
+
         var payload = new List<KeyValuePair<string, string>>
         {
             new("axAction",    "add_edit_timeSheetEntry"),
@@ -94,9 +95,9 @@ class KimaiHttpClient
             new("description", ""),
             new("start_day",   DateTime.Now.ToString("dd.MM.yyyy")),
             new("end_day",     DateTime.Now.ToString("dd.MM.yyyy")),
-            new("start_time",  "00:00:00"),
-            new("end_time",    "07:24:00"),
-            new("duration",    "07:24:00"),
+            new("start_time",  startTime.ToString(@"hh\:mm\:ss")),
+            new("end_time",    (startTime + duration).ToString(@"hh\:mm\:ss")),
+            new("duration",    duration.ToString(@"hh\:mm\:ss")),
             new("comment",     ""),
             new("commentType", "0"),
             new("userID[]",    userID.ToString()),
