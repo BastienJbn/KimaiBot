@@ -25,7 +25,7 @@ class KimaiHttpClient
         };
     }
 
-    public bool Authenticate(string username, string password)
+    public int Authenticate(string username, string password)
     {
         var content = new FormUrlEncodedContent(
         [
@@ -35,19 +35,48 @@ class KimaiHttpClient
 
         try
         {
-            _ = client.PostAsync(loginHttpAddress, content).Result;
+            // Send the POST request
+            HttpResponseMessage response = client.PostAsync(loginHttpAddress, content).Result;
+
+            // Check the response's cookies for authentication
+            var cookies = handler.CookieContainer?.GetCookies(new Uri(loginHttpAddress));
+            var kimaiUserCookie = cookies?["kimai_user"];
+            if (kimaiUserCookie == null || kimaiUserCookie.Value != username)
+                return -1;
+
+            // Search userId var in the received php Doc
+            string responseBody = response.Content.ReadAsStringAsync().Result;
+            int index = responseBody.IndexOf("userID");
+            if (index == -1)
+                return -1; // "userID" not found, something went wrong
+
+
+            /** Get userID value and return it **/
+
+            // Find the '=' character after "userID"
+            int equalsIndex = responseBody.IndexOf('=', index);
+            if (equalsIndex == -1)
+                return -1; // '=' not found after "userID"
+
+            // Start extracting the numeric value
+            int startIndex = equalsIndex + 2; // Skip the "= " characters
+            int endIndex = responseBody.IndexOfAny([';', ' '], startIndex);
+            if (endIndex == -1)
+                endIndex = responseBody.Length; // If there's no delimiter, assume it's at the end of the string
+            if( (endIndex - startIndex) > 20)
+                return -1; // Too much character between the equal and the end character
+
+            string userIdString = responseBody[startIndex..endIndex].Trim();
+
+            // Attempt to parse the extracted substring as an integer
+            if (int.TryParse(userIdString, out int userId))
+                return userId;
+            else
+                return -1; // Parsing failed
         }
         catch {
-            return false;
+            return -1;
         }
-
-        //Check response
-        var cookies = handler.CookieContainer.GetCookies(new Uri(loginHttpAddress));
-        var kimaiUserCookie = cookies["kimai_user"];
-        if(kimaiUserCookie != null &&  kimaiUserCookie.Value == username)
-            return true;
-        else
-            return false;
     }
 
     public void Logout()
@@ -55,7 +84,7 @@ class KimaiHttpClient
         handler.CookieContainer.SetCookies(new Uri(loginHttpAddress), "");
     }
 
-    public bool AddEntryComboRnD()
+    public bool AddEntryComboRnD(int userID)
     {
         var payload = new List<KeyValuePair<string, string>>
         {
@@ -66,11 +95,11 @@ class KimaiHttpClient
             new("start_day",   DateTime.Now.ToString("dd.MM.yyyy")),
             new("end_day",     DateTime.Now.ToString("dd.MM.yyyy")),
             new("start_time",  "00:00:00"),
-            new("end_time",    "07:00:00"),
-            new("duration",    "07:00:00"),
+            new("end_time",    "07:24:00"),
+            new("duration",    "07:24:00"),
             new("comment",     ""),
             new("commentType", "0"),
-            new("userID[]",    "675906454"),
+            new("userID[]",    userID.ToString()),
             new("statusID",    "1"),
             new("billable",    "0")
         };

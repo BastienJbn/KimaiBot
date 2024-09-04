@@ -14,6 +14,7 @@ public class UserPrefs
     private string? _password;
     private DateTime? _lastEntryAdded;
     private TimeSpan? _triggerTime;
+    private int? _userId;
 
     public string? Username
     {
@@ -49,6 +50,16 @@ public class UserPrefs
         set
         {
             _triggerTime = value;
+            Save();
+        }
+    }
+
+    public int? UserId
+    {
+        get => _userId;
+        set
+        {
+            _userId = value;
             Save();
         }
     }

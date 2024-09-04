@@ -9,6 +9,7 @@ using System;
 using System.IO;
 
 using CliWrap;
+using Microsoft.Extensions.Options;
 
 const string ServiceName = "KimaiBot";
 
@@ -58,18 +59,11 @@ builder.Services.AddWindowsService(options =>
     options.ServiceName = ServiceName;
 });
 
-// Register EventLog settings
-LoggerProviderOptions.RegisterProviderOptions<
-    EventLogSettings, EventLogLoggerProvider>(builder.Services);
-
 // Configure logging
-builder.Services.AddLogging(configure =>
+builder.Services.AddLogging(options =>
 {
-    configure.AddConsole();
-    configure.AddEventLog(options =>
-    {
-        options.SourceName = ServiceName;
-    });
+    options.AddEventSourceLogger();
+    options.SetMinimumLevel(LogLevel.Trace);
 });
 
 // Add KimaiBot as a hosted service

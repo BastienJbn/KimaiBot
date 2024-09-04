@@ -1,8 +1,6 @@
 ﻿using KimaiBotCmdLine;
 using System;
 
-const string pathKey = "PATH";
-
 // Main function when debugging
 #if DEBUG
 
@@ -33,6 +31,8 @@ while (true)
 #else
 
 // Main function when running the application
+
+const string pathKey = "PATH";
 
 if (args.Length!=0 && args[0] is "/Install")
 {
