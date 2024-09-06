@@ -65,7 +65,7 @@ builder.Services.AddLogging(options =>
 });
 
 // Add KimaiBot as a hosted service
-builder.Services.AddHostedService<WindowsBackgroundService>();
+builder.Services.AddHostedService<KimaiBot>();
 
 // Build and run the host
 IHost host = builder.Build();

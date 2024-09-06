@@ -1,45 +1,62 @@
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Threading;
-using System;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Windows.System;
+using System;
+using System.Timers;
+using System.ServiceProcess;
+using Microsoft.Win32;
 
 namespace KimaiBotService;
 
 [SupportedOSPlatform("windows")]
-public sealed class KimaiBot(ILogger<KimaiBot> logger)
+public class KimaiBot : BackgroundService
 {
+    private readonly ILogger<KimaiBot> logger;
+
     private readonly System.Timers.Timer timer = new();
     private readonly KimaiHttpClient httpClient = new();
     private readonly PipeServer server = new();
 
-    private int nbTry = 0;
-    private const int MAX_TRIES = 5;
-
-    private bool isAuthenticated = false;
     private UserPrefs userPrefs = new();
 
-    /**
-     * Start the KimaiBot service.
-     * @param token The cancellation token.
-     */
-    public async Task Start(CancellationToken token)
+    public KimaiBot(ILogger<KimaiBot> _logger)
     {
-        if (!logger.IsEnabled(LogLevel.Information))
+        logger = _logger;
+
+        // Subscribe to power mode change events
+        SystemEvents.PowerModeChanged += OnPowerChange;
+
+        SafeSetDefaultConfig();
+    }
+
+    // Unsubscribe from events when service stops
+    public override void Dispose()
+    {
+        SystemEvents.PowerModeChanged -= OnPowerChange;
+        timer.Dispose();
+        base.Dispose();
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken token)
+    {
+        if (!logger.IsEnabled(LogLevel.Trace))
         {
-            logger.LogWarning("LogLevel Information is not enabled!");
+            logger.LogWarning("LogLevel Trace is not enabled!");
         }
 
         logger.LogTrace("Démarrage service KimaiBot.");
 
-        // Load user preferences
+        // Load user preferences and set to default values
         userPrefs = UserPrefs.Load();
 
         // Init timer
-        timer.Elapsed += PeriodicTask;
+        timer.Elapsed += OnTimerElapsed;
         timer.AutoReset = false;
-        timer.Start();
+
+        // Add entry if needed and restart timer
+        SafeAddEntry();
 
         // Start command handler and server
         await Task.WhenAll(CommandHandler(token), server.Start(token));
@@ -65,29 +82,38 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         }
     }
 
-    /**
-     * Start timer with user pref interval
-     */
-    private void StartTimer()
+    private TimeSpan GetTimeUntilTrigger()
     {
         if (userPrefs.AddTime == null)
-        {
-            userPrefs.AddTime = new TimeSpan(0, 1, 0);
-            logger.LogWarning("Heure de déclenchement non définie. {heure} par défaut.", userPrefs.AddTime.ToString());
-        }
+            return new(0);
 
-        // Calculate time until trigger
         TimeSpan timeUntilTrigger = userPrefs.AddTime.Value - DateTime.Now.TimeOfDay;
 
         // If time is negative or entry was already added today, add a day
         if (timeUntilTrigger.TotalMilliseconds < 0 || userPrefs.LastEntryAdded?.Day == DateTime.Now.Day)
             timeUntilTrigger = timeUntilTrigger.Add(new TimeSpan(1, 0, 0, 0));
 
+        return timeUntilTrigger;
+    }
+
+    /**
+     * Start timer with user pref interval
+     */
+    private void StartTimer()
+    {
+        // Calculate time until trigger
+        TimeSpan timeUntilTrigger = GetTimeUntilTrigger();
+
         // Start timer if not already started
         timer.Interval = timeUntilTrigger.TotalMilliseconds;
 
         if (!timer.Enabled)
             timer.Start();
+    }
+
+    private DateTime GetNextTriggerTime()
+    {
+        return DateTime.Now.Add(GetTimeUntilTrigger() + TimeSpan.FromSeconds(1));
     }
 
     /**
@@ -114,27 +140,20 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
 
                 logger.LogWarning("Tentative d'authentification...");
 
-                int userId = httpClient.Authenticate(userPrefs.Username, userPrefs.Password);
+                int userId = httpClient.Authentify(userPrefs.Username, userPrefs.Password);
 
                 if (userId > 0)
                 {
-                    userPrefs.UserId = userId;
-                    isAuthenticated = true;
                     logger.LogWarning("Authentification réussie.");
 
+                    // Add entry if needed and restart timer
                     SafeAddEntry();
 
                     return "Successfully logged in.";
                 }
                 else
                 {
-                    isAuthenticated = false;
-                    nbTry++;
-                    logger.LogError("Authentification échouée. Essai numéro {nbTry}", nbTry);
-
-                    // Set timer to trigger every 10secs
-                    timer.Interval = 10000;
-                    timer.Start();
+                    logger.LogError("Authentification échouée.");
 
                     return "Failed to log in.";
                 }
@@ -143,7 +162,6 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 // Clear user credentials
                 userPrefs.Username = null;
                 userPrefs.Password = null;
-                isAuthenticated = false;
 
                 // Log out of Kimai
                 httpClient.Logout();
@@ -155,7 +173,7 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 return "Successfully logged out.";
 
             case "addEntry":
-                if ((userPrefs.Username == null || userPrefs.Password == null) || !isAuthenticated || userPrefs.UserId == null)
+                if (userPrefs.Username == null || userPrefs.Password == null)
                 {
                     logger.LogWarning("Utilisateur non authentifié.");
                     return "User not authenticated. Use \"login\" command before.";
@@ -182,9 +200,30 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
                 userPrefs.Duration = _duration;
                 userPrefs.AddTime = _addTime;
 
+                // If addTime is prior in the day that current time
+                if(_addTime < DateTime.Today - DateTime.Now)
+                {
+                    // Add entry
+                    SafeAddEntry();
+                }
+
                 StartTimer();
 
                 return "Configuration saved.";
+
+            case "status":
+                string ret = "";
+
+                if (CredsEntered())
+                    ret += $"Logged as {userPrefs.Username}\n\r";
+                else
+                    ret += "Not logged yet.\n\r";
+                ret += $"Next trigger: {GetNextTriggerTime()}\n\r";
+                ret += "Entry Configuration: \n\r";
+                ret += $"\tStart time: {userPrefs.StartTime}\n\r";
+                ret += $"\tDuration: {userPrefs.Duration}";
+
+                return ret;
 
 #if DEBUG
             case "interval":
@@ -200,122 +239,111 @@ public sealed class KimaiBot(ILogger<KimaiBot> logger)
         }
     }
 
-    /**
-     * Periodic task that runs every time the timer elapses.
-     * This task is responsible for adding an entry to Kimai.
-     */
-    private void PeriodicTask(object? sender, System.Timers.ElapsedEventArgs? e)
+    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs? e)
     {
-        // Check that user has provided credentials
-        if (userPrefs.Username == null || userPrefs.Password == null)
-        {
-            // Stop timer
-            timer.Enabled = false;
-            return;
-        }
+        logger.LogWarning("Timer triggered periodic task at: {time}", DateTime.Now);
 
-        if (!isAuthenticated)
-        {
-            // Try to authenticate
-            int userId = httpClient.Authenticate(userPrefs.Username, userPrefs.Password);
-
-            if (userId > 0)
-            {
-                userPrefs.UserId = userId;
-                isAuthenticated = true;
-                logger.LogWarning("Authentification réussie.");
-
-                // Set timer to trigger at triggerTime
-                StartTimer();
-            }
-            else
-            {
-                if (nbTry < MAX_TRIES)
-                {
-                    // Restart timer with 10secs
-                    timer.Interval = 10000;
-                    timer.Enabled = true;
-
-                    nbTry++;
-
-                    logger.LogError("Authentification échouée. Essai numéro {nbTry}", nbTry);
-                }
-                else
-                {
-                    // Reset try counter
-                    nbTry = 0;
-
-                    // Stop timer
-                    timer.Enabled = false;
-
-                    // TODO: windows notif
-
-                    logger.LogError("Authentification échouée. Nombre maximum d'essai atteint.");
-                }
-                return;
-            }
-        }
-
-        // Last entry not today ? UserId known ?
-        if ((userPrefs.LastEntryAdded == null || (userPrefs.LastEntryAdded.Value.Date != DateTime.Now.Date)) && userPrefs.UserId != null)
-        {
-
-        }
-        else
-        {
-            logger.LogWarning("Entrée déjà ajoutée aujourd'hui à {heure}. Démarrage du timer pour un déclanchement à {heure}.",
-                userPrefs.LastEntryAdded.ToString(), userPrefs.AddTime.ToString());
-
-            StartTimer();
-        }
+        // Add entry if needed and restart timer
+        SafeAddEntry();
     }
 
     private bool SafeAddEntry()
     {
         // Last entry was today ?
-        if ((userPrefs.LastEntryAdded != null && userPrefs.LastEntryAdded.Value.Date == DateTime.Now.Date))
-            return true;  // Do nothing and return
-
-        // Add entry
-        return AddEntry();
-    }
-
-    private bool AddEntry()
-    {
-        if (userPrefs.StartTime == null)
-        {
-            userPrefs.StartTime = new(0, 0, 0);
-            logger.LogWarning("StartTime non définie. {heure} par défaut.", userPrefs.StartTime.ToString());
-        }
-
-        if (userPrefs.Duration == null)
-        {
-            userPrefs.Duration = new(7, 24, 0);
-            logger.LogWarning("Durée non définie. {heure} par défaut.", userPrefs.Duration.ToString());
-        }
-
-        // UserId not received, can't add entry
-        if (userPrefs.UserId == null)
-            return false;
-
-        if (httpClient.AddEntryComboRnD(userPrefs.UserId.Value, userPrefs.StartTime.Value, userPrefs.Duration.Value))
+        if ((userPrefs.LastEntryAdded != null) && userPrefs.LastEntryAdded.Value.Date == DateTime.Now.Date)
         {
             logger.LogWarning("Entrée ajoutée. Démarrage du timer pour un déclanchement à {heure}.", userPrefs.AddTime.ToString());
-            userPrefs.LastEntryAdded = DateTime.Now;
+            StartTimer();
+            return true;
+        }
+        
+        if(AddEntry())
+        {
+            logger.LogWarning("Entrée ajoutée. Démarrage du timer pour un déclanchement à {heure}.", userPrefs.AddTime.ToString());
             StartTimer();
             return true;
         }
         else
         {
-            // HttpClient failed to add entry, try to re-authenticate
-            isAuthenticated = false;
+            logger.LogError("Ajout d'entrée échouée.");
+            timer.Stop();
 
-            // Set timer to 10secs
-            timer.Interval = 10000;
-            timer.Enabled = true;
+            // TODO: windows notif. Probably a server disconnection.
 
-            logger.LogError("Ajout d'entrée échouée. Essai de ré-Authentification.");
             return false;
         }
+    }
+
+    private bool AddEntry()
+    {
+        // Check creds
+        if (!CredsEntered())
+            return false;
+
+        // Try to authenticate
+        int userId = httpClient.Authentify(userPrefs.Username, userPrefs.Password);
+
+        if (userId <= 0)
+        {
+            logger.LogError("Authentification échouée.");
+
+            return false;
+        }
+
+        if (httpClient.AddEntryComboRnD(userId, userPrefs.StartTime.Value, userPrefs.Duration.Value))
+        {
+            userPrefs.LastEntryAdded = DateTime.Now;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private void OnPowerChange(object sender, PowerModeChangedEventArgs e)
+    {
+        if (e.Mode == PowerModes.Suspend)
+        {
+            logger.LogInformation("System is going to sleep.");
+            // Handle system suspend logic, e.g., pause timers or save state
+        }
+        else if (e.Mode == PowerModes.Resume)
+        {
+            logger.LogInformation("System has resumed from sleep.");
+
+            // Add entry if needed and restart timer
+            SafeAddEntry();
+        }
+    }
+
+    private bool CredsEntered()
+    {
+        return userPrefs.Username != null && userPrefs.Password != null;
+    }
+
+    private void SafeSetDefaultConfig()
+    {
+        string logStr = "";
+
+        if (userPrefs.StartTime == null)
+        {
+            userPrefs.StartTime = new(0, 0, 0);
+            logStr += $"StartTime non définie. {userPrefs.StartTime} par défaut.\n\r";
+        }
+
+        if (userPrefs.Duration == null)
+        {
+            userPrefs.Duration = new(7, 24, 0);
+            logStr += $"Durée non définie. {userPrefs.Duration} par défaut.\n\r";
+        }
+
+        if (userPrefs.AddTime == null)
+        {
+            userPrefs.AddTime = new TimeSpan(0, 1, 0);
+            logStr += $"Heure de déclenchement non définie. {userPrefs.AddTime} par défaut.\n\r";
+        }
+
+        logger.LogWarning(logStr);
     }
 }

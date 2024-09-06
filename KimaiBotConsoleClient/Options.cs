@@ -35,6 +35,11 @@ public class ConfigureOptions
     public required string AddTime { get; set; }
 }
 
+[Verb("status", HelpText = "Display bot status.")]
+public class StatusOptions
+{
+}
+
 // Debug commands
 #if DEBUG
 [Verb("interval", HelpText = "set timer interval")]

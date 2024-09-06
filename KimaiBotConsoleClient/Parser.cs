@@ -18,6 +18,7 @@ class Parser(PipeClient pipeClient)
             , LogoutOptions
             , AddEntryOptions
             , ConfigureOptions
+            , StatusOptions
 #if DEBUG
             , IntervalOptions
 #endif   
@@ -26,7 +27,8 @@ class Parser(PipeClient pipeClient)
                 (LoginOptions opts) => RunLogin(opts)
                 , (LogoutOptions opts) => RunLogout(opts)
                 , (AddEntryOptions opts) => RunAddEntry(opts)
-                , (ConfigureOptions opts) => RunConfigure(opts) 
+                , (ConfigureOptions opts) => RunConfigure(opts)
+                , (StatusOptions opts) => RunStatus(opts)
 #if DEBUG
                 , (IntervalOptions opts) => RunInterval(opts)
 #endif
@@ -56,6 +58,11 @@ class Parser(PipeClient pipeClient)
     private string RunConfigure(ConfigureOptions opts)
     {
         return pipeClient.SendReceive($"configure {opts.StartTime} {opts.Duration} {opts.AddTime}");
+    }
+
+    private string RunStatus(StatusOptions opts)
+    {
+        return pipeClient.SendReceive("status");
     }
 
 #if DEBUG

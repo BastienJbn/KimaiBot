@@ -13,7 +13,6 @@ public class UserPrefs
     private string? _username;
     private string? _password;
     private DateTime? _lastEntryAdded;
-    private int? _userId;
 
     private TimeSpan? _addTime;
     private TimeSpan? _startTime;
@@ -43,16 +42,6 @@ public class UserPrefs
         set
         {
             _lastEntryAdded = value;
-            Save();
-        }
-    }
-
-    public int? UserId
-    {
-        get => _userId;
-        set
-        {
-            _userId = value;
             Save();
         }
     }

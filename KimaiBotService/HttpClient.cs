@@ -25,7 +25,7 @@ class KimaiHttpClient
         };
     }
 
-    public int Authenticate(string username, string password)
+    public int Authentify(string username, string password)
     {
         var content = new FormUrlEncodedContent(
         [
@@ -37,12 +37,6 @@ class KimaiHttpClient
         {
             // Send the POST request
             HttpResponseMessage response = client.PostAsync(loginHttpAddress, content).Result;
-
-            // Check the response's cookies for authentication
-            var cookies = handler.CookieContainer?.GetCookies(new Uri(loginHttpAddress));
-            var kimaiUserCookie = cookies?["kimai_user"];
-            if (kimaiUserCookie == null || kimaiUserCookie.Value != username)
-                return -1;
 
             // Search userId var in the received php Doc
             string responseBody = response.Content.ReadAsStringAsync().Result;
@@ -86,7 +80,6 @@ class KimaiHttpClient
 
     public bool AddEntryComboRnD(int userID, TimeSpan startTime, TimeSpan duration)
     {
-
         var payload = new List<KeyValuePair<string, string>>
         {
             new("axAction",    "add_edit_timeSheetEntry"),
